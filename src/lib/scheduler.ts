@@ -1,7 +1,7 @@
 // ============================================================
 // Army Duty Scheduler Algorithm
 // ============================================================
-import { Personnel, DutyAssignment, DutyPosition, DUTY_POSITIONS, ExceptionEntry } from './types';
+import { Personnel, DutyAssignment, DutyPosition, DUTY_POSITIONS, ExceptionEntry, PunishmentEntry } from './types';
 
 /**
  * Get active personnel (excluding those exempt from duty)
@@ -34,6 +34,7 @@ export function getActivePersonnel(
 export function generateSchedule(
   personnel: Personnel[],
   exceptions: ExceptionEntry[],
+  punishments: PunishmentEntry[],
   startDate: string,
   endDate: string,
   startFromId: number = 1
@@ -68,13 +69,35 @@ export function generateSchedule(
 
     // For each shift (1-4)
     for (let shift = 1; shift <= 4; shift++) {
-      // For each position
+      const punishedToday = punishments.filter(p => p.startDate <= dateStr && p.endDate >= dateStr && p.shift === shift);
+      const punishedPersonnel = punishedToday.map(p => allPersonnel.find(x => x.id === p.personnelId)).filter(Boolean) as Personnel[];
+      
+      const assignedForThisShift: Personnel[] = [];
+      
+      for (const p of punishedPersonnel) {
+        if (assignedForThisShift.length < 6 && !assignedForThisShift.find(x => x.id === p.id)) {
+          assignedForThisShift.push(p);
+        }
+      }
+      
+      let attempts = 0;
+      while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
+        const p = activeToday[queuePointer % activeToday.length];
+        queuePointer = (queuePointer + 1) % activeToday.length;
+        if (!assignedForThisShift.find(x => x.id === p.id)) {
+          assignedForThisShift.push(p);
+        }
+        attempts++;
+      }
+      
+      while (assignedForThisShift.length < 6) {
+        assignedForThisShift.push(undefined as any);
+      }
+      
+      let idx = 0;
       for (const position of positions) {
-        // Assign 2 people
-        const person1 = activeToday[queuePointer % activeToday.length];
-        queuePointer = (queuePointer + 1) % activeToday.length;
-        const person2 = activeToday[queuePointer % activeToday.length];
-        queuePointer = (queuePointer + 1) % activeToday.length;
+        const person1 = assignedForThisShift[idx++];
+        const person2 = assignedForThisShift[idx++];
 
         assignments.push({
           date: dateStr,

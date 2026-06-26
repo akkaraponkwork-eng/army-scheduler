@@ -1,0 +1,19 @@
+{
+  "name": "ระบบจัดเวรทหาร",
+  "short_name": "เวรทหาร",
+  "description": "ระบบจัดตารางเวรยืนทหาร 4 ผลัด เชื่อมต่อ Google Sheets",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c10",
+  "theme_color": "#c9a84c",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}

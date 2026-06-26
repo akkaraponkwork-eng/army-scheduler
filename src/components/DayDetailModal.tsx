@@ -1,0 +1,162 @@
+'use client';
+import React, { useState, useCallback } from 'react';
+import { DutyAssignment, Personnel, SHIFT_TIMES, DUTY_POSITIONS } from '@/lib/types';
+import { Clipboard, Edit2, Inbox, Check, Copy, X } from 'lucide-react';
+
+interface DayDetailModalProps {
+  date: string;
+  assignments: DutyAssignment[];
+  personnel: Personnel[];
+  onClose: () => void;
+  onEdit: (assignment: DutyAssignment) => void;
+  onCopy: () => void;
+}
+
+const SHIFT_COLORS = ['s1', 's2', 's3', 's4'];
+
+const POS_CLASS: Record<string, string> = {
+  north_armory: 'pos-north',
+  central_porch: 'pos-central',
+  south_armory: 'pos-south',
+};
+
+export default function DayDetailModal({
+  date,
+  assignments,
+  personnel,
+  onClose,
+  onEdit,
+  onCopy,
+}: DayDetailModalProps) {
+  const [copied, setCopied] = useState(false);
+  const personnelMap = new Map(personnel.map((p) => [p.id, p]));
+
+  const formatDate = (d: string) => {
+    const dateObj = new Date(d);
+    const thaiMonths = [
+      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+    ];
+    const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+    const thaiYear = dateObj.getFullYear() + 543;
+    return `วัน${thaiDays[dateObj.getDay()]}ที่ ${dateObj.getDate()} ${thaiMonths[dateObj.getMonth()]} ${thaiYear}`;
+  };
+
+  const handleCopy = useCallback(() => {
+    onCopy();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [onCopy]);
+
+  // Count total assigned personnel
+  const totalAssigned = assignments.reduce((sum, a) => {
+    return sum + (a.person1Id ? 1 : 0) + (a.person2Id ? 1 : 0);
+  }, 0);
+
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-content">
+        <div className="modal-header">
+          <div>
+            <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Clipboard size={20} className="text-blue-500" /> ตารางเวร</div>
+            <div className="modal-date">{formatDate(date)}</div>
+          </div>
+          <button className="btn btn-ghost btn-icon" onClick={onClose} aria-label="ปิด" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="modal-body">
+          {SHIFT_TIMES.map((shiftInfo, idx) => {
+            const shiftAssignments = assignments.filter((a) => a.shift === shiftInfo.shift);
+            return (
+              <div key={shiftInfo.shift} className="shift-section">
+                <div className={`shift-header ${SHIFT_COLORS[idx]}`}>
+                  <span>{shiftInfo.label}</span>
+                  <span className="shift-time">{shiftInfo.start} – {shiftInfo.end}</span>
+                </div>
+                <div className="shift-positions">
+                  {DUTY_POSITIONS.map((pos) => {
+                    const a = shiftAssignments.find((x) => x.position === pos.key);
+                    const p1 = a?.person1Id ? personnelMap.get(a.person1Id) : null;
+                    const p2 = a?.person2Id ? personnelMap.get(a.person2Id) : null;
+
+                    return (
+                      <div key={pos.key} className={`position-cell ${POS_CLASS[pos.key]}`}>
+                        <div className="position-label">
+                          <span className="position-dot" />
+                          {pos.label}
+                          {a && (
+                            <button
+                              className="btn btn-ghost btn-sm btn-icon"
+                              style={{ marginLeft: 'auto', padding: '4px', minWidth: 'auto', minHeight: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              onClick={() => onEdit(a)}
+                              aria-label={`แก้ไข ${pos.label}`}
+                            >
+                              <Edit2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                        <div className="personnel-badge">
+                          {p1 ? (
+                            <div className="personnel-item">
+                              <span className="personnel-id">{String(p1.id).padStart(3, '0')}</span>
+                              <span className="personnel-name">{p1.name}</span>
+                            </div>
+                          ) : (
+                            <div className="personnel-empty">— ว่าง —</div>
+                          )}
+                          {p2 ? (
+                            <div className="personnel-item">
+                              <span className="personnel-id">{String(p2.id).padStart(3, '0')}</span>
+                              <span className="personnel-name">{p2.name}</span>
+                            </div>
+                          ) : (
+                            <div className="personnel-empty">— ว่าง —</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          {assignments.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              padding: '3rem 1.5rem',
+              color: 'var(--text-faint)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', opacity: 0.5 }}><Inbox size={48} /></div>
+              <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)' }}>
+                ยังไม่มีตารางเวรวันนี้
+              </div>
+              <div style={{ fontSize: '12px', marginTop: '8px', color: 'var(--text-faint)' }}>
+                กดปุ่ม &quot;⚡ สร้างเวร&quot; เพื่อสร้างอัตโนมัติ
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: '500' }}>
+            {totalAssigned > 0 ? `${totalAssigned} นาย` : ''}
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {assignments.length > 0 && (
+              <button
+                className={`btn ${copied ? 'btn-primary' : 'btn-copy'}`}
+                onClick={handleCopy}
+                id="btn-copy-schedule"
+              >
+                {copied ? <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={14} /> คัดลอกแล้ว</span> : <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอก</span>}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

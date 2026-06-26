@@ -57,3 +57,10 @@ export interface ExceptionEntry {
   startDate: string;
   endDate: string;
 }
+
+export interface PunishmentEntry {
+  personnelId: number;
+  shift: number; // 1-4
+  startDate: string;
+  endDate: string;
+}
