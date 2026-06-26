@@ -218,7 +218,7 @@ export default function Calendar({
           03:00
         </div>
         <div className="legend-item" style={{ marginLeft: 'auto' }}>
-          <div className="legend-dot" style={{ background: 'var(--gold-400)', borderRadius: 'var(--r-full)' }} />
+          <div className="legend-dot" style={{ background: 'var(--primary-blue-500)', borderRadius: 'var(--r-full)' }} />
           วันนี้
         </div>
       </div>

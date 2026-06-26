@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Shield, Check, Copy, Zap, ShieldAlert, CalendarIcon, Gavel, Activity } from 'lucide-react';
 import Link from 'next/link';
@@ -94,20 +94,20 @@ export default function HomePage() {
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={14} /> ติดตั้งแอปสำเร็จ</span>);
+      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={14} /> เธ•เธดเธ”เธ•เธฑเนเธเนเธญเธเธชเธณเน€เธฃเนเธ</span>);
     }
     setDeferredPrompt(null);
     setShowInstallBanner(false);
   };
 
-  // ─── Toast helpers ───
+  // โ”€โ”€โ”€ Toast helpers โ”€โ”€โ”€
   const showToast = useCallback((type: Toast['type'], message: React.ReactNode) => {
     const id = ++toastId.current;
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
   }, []);
 
-  // ─── Load data ───
+  // โ”€โ”€โ”€ Load data โ”€โ”€โ”€
   const loadPersonnel = useCallback(async () => {
     try {
       const res = await fetch('/api/personnel');
@@ -120,7 +120,7 @@ export default function HomePage() {
         throw new Error('Invalid data format');
       }
     } catch {
-      showToast('error', 'ไม่สามารถโหลดรายชื่อได้ — ตรวจสอบการตั้งค่า');
+      showToast('error', 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธฃเธฒเธขเธเธทเนเธญเนเธ”เน โ€” เธ•เธฃเธงเธเธชเธญเธเธเธฒเธฃเธ•เธฑเนเธเธเนเธฒ');
     }
   }, [showToast]);
 
@@ -135,7 +135,7 @@ export default function HomePage() {
         setScheduleData(data);
       }
     } catch {
-      showToast('error', 'ไม่สามารถโหลดตารางเวรได้');
+      showToast('error', 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธ•เธฒเธฃเธฒเธเน€เธงเธฃเนเธ”เน');
     } finally {
       const end = performance.now();
       setFetchSpeed(Math.round(end - start));
@@ -176,7 +176,7 @@ export default function HomePage() {
     loadSchedule(year, month);
   }, [year, month, loadSchedule]);
 
-  // ─── Navigation ───
+  // โ”€โ”€โ”€ Navigation โ”€โ”€โ”€
   const handlePrevMonth = () => {
     if (month === 1) { setYear(y => y - 1); setMonth(12); }
     else setMonth(m => m - 1);
@@ -187,17 +187,17 @@ export default function HomePage() {
     else setMonth(m => m + 1);
   };
 
-  // ─── Day detail ───
+  // โ”€โ”€โ”€ Day detail โ”€โ”€โ”€
   const selectedDayAssignments = selectedDate
     ? scheduleData.filter((a) => a.date === selectedDate)
     : [];
 
-  // ─── Copy ───
+  // โ”€โ”€โ”€ Copy โ”€โ”€โ”€
   const handleCopy = useCallback(() => {
     if (!selectedDate) return;
     const text = formatScheduleText(selectedDate, selectedDayAssignments, personnel);
     navigator.clipboard.writeText(text).then(() => {
-      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอกสำเร็จ</span>);
+      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> เธเธฑเธ”เธฅเธญเธเธชเธณเน€เธฃเนเธ</span>);
     }).catch(() => {
       // Fallback for mobile
       const textarea = document.createElement('textarea');
@@ -208,11 +208,11 @@ export default function HomePage() {
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอกสำเร็จ</span>);
+      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> เธเธฑเธ”เธฅเธญเธเธชเธณเน€เธฃเนเธ</span>);
     });
   }, [selectedDate, selectedDayAssignments, personnel, showToast]);
 
-  // ─── Edit ───
+  // โ”€โ”€โ”€ Edit โ”€โ”€โ”€
   const handleSaveEdit = async (updated: DutyAssignment) => {
     try {
       const res = await fetch('/api/schedule', {
@@ -229,13 +229,13 @@ export default function HomePage() {
             : a
         )
       );
-      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={14} /> บันทึกเรียบร้อย</span>);
+      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={14} /> เธเธฑเธเธ—เธถเธเน€เธฃเธตเธขเธเธฃเนเธญเธข</span>);
     } catch {
-      showToast('error', 'ไม่สามารถบันทึกได้');
+      showToast('error', 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธเธฑเธเธ—เธถเธเนเธ”เน');
     }
   };
 
-  // ─── Generate ───
+  // โ”€โ”€โ”€ Generate โ”€โ”€โ”€
   const handleGenerate = async (startDate: string, endDate: string, startFromId: number) => {
     const res = await fetch('/api/generate', {
       method: 'POST',
@@ -244,11 +244,11 @@ export default function HomePage() {
     });
     if (!res.ok) throw new Error('Failed');
     const result = await res.json();
-    showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Zap size={14} /> สร้างเวร {result.count} รายการสำเร็จ</span>);
+    showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Zap size={14} /> เธชเธฃเนเธฒเธเน€เธงเธฃ {result.count} เธฃเธฒเธขเธเธฒเธฃเธชเธณเน€เธฃเนเธ</span>);
     await loadSchedule(year, month);
   };
 
-  // ─── Exceptions ───
+  // โ”€โ”€โ”€ Exceptions โ”€โ”€โ”€
   const handleAddException = async (entry: ExceptionEntry) => {
     const res = await fetch('/api/exceptions', {
       method: 'POST',
@@ -257,7 +257,7 @@ export default function HomePage() {
     });
     if (!res.ok) throw new Error('Failed');
     setExceptions((prev) => [...prev, entry]);
-    showToast('success', 'เพิ่มรายการยกเว้นสำเร็จ');
+    showToast('success', 'เน€เธเธดเนเธกเธฃเธฒเธขเธเธฒเธฃเธขเธเน€เธงเนเธเธชเธณเน€เธฃเนเธ');
   };
 
   const handleRemoveException = async (personnelId: number, startDate: string) => {
@@ -268,7 +268,7 @@ export default function HomePage() {
     });
     if (!res.ok) throw new Error('Failed');
     setExceptions((prev) => prev.filter((e) => !(e.personnelId === personnelId && e.startDate === startDate)));
-    showToast('info', 'ลบรายการยกเว้นแล้ว');
+    showToast('info', 'เธฅเธเธฃเธฒเธขเธเธฒเธฃเธขเธเน€เธงเนเธเนเธฅเนเธง');
   };
 
   const handleAddPunishments = async (entries: PunishmentEntry[]) => {
@@ -279,7 +279,7 @@ export default function HomePage() {
     });
     if (!res.ok) throw new Error('Failed');
     setPunishments((prev) => [...prev, ...entries]);
-    showToast('success', 'บันทึกรายการดองเวรสำเร็จ');
+    showToast('success', 'เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃเธ”เธญเธเน€เธงเธฃเธชเธณเน€เธฃเนเธ');
   };
 
   const handleRemovePunishment = async (personnelId: number, startDate: string) => {
@@ -290,7 +290,7 @@ export default function HomePage() {
     });
     if (!res.ok) throw new Error('Failed');
     setPunishments((prev) => prev.filter((e) => !(e.personnelId === personnelId && e.startDate === startDate)));
-    showToast('info', 'ลบรายการดองเวรแล้ว');
+    showToast('info', 'เธฅเธเธฃเธฒเธขเธเธฒเธฃเธ”เธญเธเน€เธงเธฃเนเธฅเนเธง');
   };
 
   const activeCount = personnel.filter((p) => p.status === 'active').length;
@@ -298,28 +298,28 @@ export default function HomePage() {
 
   return (
     <div className="app-wrapper">
-      {/* ─── Header ─── */}
+      {/* โ”€โ”€โ”€ Header โ”€โ”€โ”€ */}
       <header className="app-header">
         <div className="header-brand">
           <div className="header-emblem"><Shield size={20} color="var(--bg-void)" /></div>
           <div>
             <div className="header-title">ARMY DUTY</div>
-            <div className="header-subtitle">ระบบจัดตารางเวรทหาร</div>
+            <div className="header-subtitle">เธฃเธฐเธเธเธเธฑเธ”เธ•เธฒเธฃเธฒเธเน€เธงเธฃเธ—เธซเธฒเธฃ</div>
           </div>
         </div>
         <div className="header-actions">
           {loading ? (
             <div className="status-bar">
               <span className="loading-spinner" />
-              <span>กำลังโหลด</span>
+              <span>เธเธณเธฅเธฑเธเนเธซเธฅเธ”</span>
             </div>
           ) : (
             <div className="status-bar">
               <span className="status-dot" />
-              <span>{activeCount} นาย · ยกเว้น {exemptCount}</span>
+              <span>{activeCount} เธเธฒเธข ยท เธขเธเน€เธงเนเธ {exemptCount}</span>
               {fetchSpeed !== null && (
                 <span style={{ marginLeft: '8px', fontSize: '10px', color: 'var(--text-faint)', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px' }}>
-                  ⏱️ {fetchSpeed}ms
+                  โฑ๏ธ {fetchSpeed}ms
                 </span>
               )}
             </div>
@@ -327,12 +327,12 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* ─── Main ─── */}
+      {/* โ”€โ”€โ”€ Main โ”€โ”€โ”€ */}
       <main className="app-main">
-        {/* Toolbar */}
+        {/* Toolbar (Desktop only โ€” hidden on mobile via CSS) */}
         <div className="toolbar">
           <Link href="/dashboard" className="btn btn-secondary" id="btn-open-dashboard">
-            <Activity size={16} /> แดชบอร์ด
+            <Activity size={16} /> เนเธ”เธเธเธญเธฃเนเธ”
           </Link>
           <button
             className="btn btn-primary"
@@ -340,7 +340,7 @@ export default function HomePage() {
             disabled={loading || personnel.length === 0}
             id="btn-open-generate"
           >
-            <Zap size={16} /> สร้างเวร
+            <Zap size={16} /> เธชเธฃเนเธฒเธเน€เธงเธฃ
           </button>
           <button
             className="btn btn-secondary"
@@ -348,11 +348,11 @@ export default function HomePage() {
             disabled={loading}
             id="btn-open-exceptions"
           >
-            <ShieldAlert size={16} /> ยกเว้น
+            <ShieldAlert size={16} /> เธขเธเน€เธงเนเธ
             {exemptCount > 0 && (
               <span style={{
                 background: 'var(--red)',
-                color: '#000',
+                color: '#fff',
                 borderRadius: 'var(--r-full)',
                 padding: '1px 6px',
                 fontSize: '10px',
@@ -363,7 +363,6 @@ export default function HomePage() {
               </span>
             )}
           </button>
-          
           <button
             className="btn btn-secondary"
             onClick={() => setShowPunishments(true)}
@@ -371,11 +370,11 @@ export default function HomePage() {
             id="btn-open-punishments"
             style={{ color: 'var(--red)', borderColor: 'var(--border)' }}
           >
-            <Gavel size={16} /> ดองเวร
+            <Gavel size={16} /> เธ”เธญเธเน€เธงเธฃ
             {punishments.length > 0 && (
               <span style={{
                 background: 'var(--red)',
-                color: '#000',
+                color: '#fff',
                 borderRadius: 'var(--r-full)',
                 padding: '1px 6px',
                 fontSize: '10px',
@@ -394,7 +393,7 @@ export default function HomePage() {
             onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1); }}
             id="btn-go-today"
           >
-            <CalendarIcon size={16} /> วันนี้
+            <CalendarIcon size={16} /> เธงเธฑเธเธเธตเน
           </button>
 
           {loadingSchedule && (
@@ -416,7 +415,49 @@ export default function HomePage() {
         />
       </main>
 
-      {/* ─── Modals ─── */}
+      {/* โ”€โ”€โ”€ Bottom Navigation (Mobile) โ”€โ”€โ”€ */}
+      <nav className="bottom-nav">
+        <button
+          className="bottom-nav-item active"
+          onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1); }}
+        >
+          <CalendarIcon size={20} />
+          <span>เธเธเธดเธ—เธดเธ</span>
+        </button>
+        <button
+          className="bottom-nav-item"
+          onClick={() => setShowGenerate(true)}
+          disabled={loading || personnel.length === 0}
+        >
+          <Zap size={20} />
+          <span>เธชเธฃเนเธฒเธเน€เธงเธฃ</span>
+        </button>
+        <button
+          className="bottom-nav-item"
+          onClick={() => setShowExceptions(true)}
+        >
+          <ShieldAlert size={20} />
+          <span>เธขเธเน€เธงเนเธ</span>
+          {exemptCount > 0 && <span className="bottom-nav-badge">{exemptCount}</span>}
+        </button>
+        <button
+          className="bottom-nav-item"
+          onClick={() => setShowPunishments(true)}
+        >
+          <Gavel size={20} />
+          <span>เธ”เธญเธเน€เธงเธฃ</span>
+          {punishments.length > 0 && <span className="bottom-nav-badge">{punishments.length}</span>}
+        </button>
+        <Link
+          href="/dashboard"
+          className="bottom-nav-item"
+        >
+          <Activity size={20} />
+          <span>เธชเธฃเธธเธ</span>
+        </Link>
+      </nav>
+
+      {/* โ”€โ”€โ”€ Modals โ”€โ”€โ”€ */}
       {selectedDate && (
         <DayDetailModal
           date={selectedDate}
@@ -464,24 +505,24 @@ export default function HomePage() {
         />
       )}
 
-      {/* ─── PWA Install Banner ─── */}
+      {/* โ”€โ”€โ”€ PWA Install Banner โ”€โ”€โ”€ */}
       {showInstallBanner && deferredPrompt && (
         <div className="pwa-install-banner">
           <div className="pwa-text">
-            📲 ติดตั้ง<strong>เวรทหาร</strong>บนหน้าจอหลัก
+            ๐“ฒ เธ•เธดเธ”เธ•เธฑเนเธ<strong>เน€เธงเธฃเธ—เธซเธฒเธฃ</strong>เธเธเธซเธเนเธฒเธเธญเธซเธฅเธฑเธ
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
             <button className="btn btn-ghost btn-sm" onClick={() => setShowInstallBanner(false)}>
-              ปิด
+              เธเธดเธ”
             </button>
             <button className="btn btn-primary btn-sm" onClick={handleInstall}>
-              ติดตั้ง
+              เธ•เธดเธ”เธ•เธฑเนเธ
             </button>
           </div>
         </div>
       )}
 
-      {/* ─── Toasts ─── */}
+      {/* โ”€โ”€โ”€ Toasts โ”€โ”€โ”€ */}
       <div className="toast-container">
         {toasts.map((t) => (
           <div key={t.id} className={`toast toast-${t.type}`}>
@@ -492,3 +533,4 @@ export default function HomePage() {
     </div>
   );
 }
+
