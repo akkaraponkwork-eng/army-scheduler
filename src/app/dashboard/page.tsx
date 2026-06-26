@@ -40,30 +40,23 @@ export default function DashboardPage() {
     fetchData();
   }, [year, month]);
 
-  // Derived Summary
   const activeCount = personnel.filter(p => p.status === 'active').length;
   const exemptCount = personnel.filter(p => p.status === 'assistant_sergeant').length + exceptions.length;
-
   const personnelMap = new Map(personnel.map(p => [p.id, p]));
 
-  // Find last person of each day
   const getDailyLastPersons = () => {
-    // Group schedule by date
     const byDate: Record<string, DutyAssignment[]> = {};
     for (const a of scheduleData) {
       if (!byDate[a.date]) byDate[a.date] = [];
       byDate[a.date].push(a);
     }
 
-    const positionOrder = { 'north_armory': 1, 'central_porch': 2, 'south_armory': 3 };
+    const positionOrder: Record<string, number> = { 'north_armory': 1, 'central_porch': 2, 'south_armory': 3 };
 
     const results = [];
     for (const [date, assignments] of Object.entries(byDate).sort()) {
-      // Find the latest shift
       const maxShift = Math.max(...assignments.map(a => a.shift));
       const latestShiftAssignments = assignments.filter(a => a.shift === maxShift);
-
-      // Sort by position order (highest last)
       latestShiftAssignments.sort((a, b) => positionOrder[a.position] - positionOrder[b.position]);
 
       const lastAssignment = latestShiftAssignments[latestShiftAssignments.length - 1];
@@ -85,10 +78,21 @@ export default function DashboardPage() {
 
   const dailyLastPersons = getDailyLastPersons();
 
-  const formatDateThai = (dateStr: string) => {
+  const formatDay = (dateStr: string) => {
     const d = new Date(dateStr);
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear() + 543}`;
+    return `${d.getDate()}`;
   };
+
+  const formatMonthDay = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+  };
+
+  const THAI_MONTHS = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+  ];
 
   return (
     <div className="app-wrapper">
@@ -105,7 +109,7 @@ export default function DashboardPage() {
         <div className="header-actions">
           <select 
             className="edit-select" 
-            style={{ width: '120px', padding: '6px 12px', fontSize: '13px' }}
+            style={{ width: 'auto', padding: '6px 32px 6px 10px', fontSize: '13px', minHeight: '36px' }}
             value={`${year}-${month}`}
             onChange={(e) => {
               const [y, m] = e.target.value.split('-');
@@ -125,7 +129,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="app-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <main className="app-main" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-faint)' }}>
             <div className="loading-spinner" style={{ margin: '0 auto 10px', width: '24px', height: '24px' }} />
@@ -133,90 +137,64 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div className="shift-section" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'var(--primary-blue-glow)', padding: '12px', borderRadius: 'var(--r-md)', color: 'var(--primary-blue-500)' }}>
-                  <Users size={24} />
+            {/* ─── Summary Cards ─── */}
+            <div className="dash-stats">
+              <div className="dash-stat-card">
+                <div className="dash-stat-icon" style={{ background: 'var(--primary-blue-glow)', color: 'var(--primary-blue-500)' }}>
+                  <Users size={20} />
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>กำลังพลทั้งหมด</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>{personnel.length}</div>
-                </div>
+                <div className="dash-stat-value">{personnel.length}</div>
+                <div className="dash-stat-label">กำลังพลทั้งหมด</div>
               </div>
 
-              <div className="shift-section" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'rgba(52, 211, 153, 0.12)', padding: '12px', borderRadius: 'var(--r-md)', color: '#34d399' }}>
-                  <Activity size={24} />
+              <div className="dash-stat-card">
+                <div className="dash-stat-icon" style={{ background: 'var(--green-dim)', color: 'var(--green)' }}>
+                  <Activity size={20} />
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>ใช้งานได้ (Active)</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>{activeCount}</div>
-                </div>
+                <div className="dash-stat-value">{activeCount}</div>
+                <div className="dash-stat-label">ใช้งานได้</div>
               </div>
 
-              <div className="shift-section" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'var(--red-dim)', padding: '12px', borderRadius: 'var(--r-md)', color: 'var(--red)' }}>
-                  <ShieldAlert size={24} />
+              <div className="dash-stat-card">
+                <div className="dash-stat-icon" style={{ background: 'var(--red-dim)', color: 'var(--red)' }}>
+                  <ShieldAlert size={20} />
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>ยกเว้น / ป่วย</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>{exemptCount}</div>
-                </div>
+                <div className="dash-stat-value">{exemptCount}</div>
+                <div className="dash-stat-label">ยกเว้น / ป่วย</div>
               </div>
 
-              <div className="shift-section" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'var(--orange-dim)', padding: '12px', borderRadius: 'var(--r-md)', color: 'var(--orange)' }}>
-                  <Clock size={24} />
+              <div className="dash-stat-card">
+                <div className="dash-stat-icon" style={{ background: 'var(--orange-dim)', color: 'var(--orange)' }}>
+                  <Clock size={20} />
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>ดองเวร</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>{punishments.length}</div>
-                </div>
+                <div className="dash-stat-value">{punishments.length}</div>
+                <div className="dash-stat-label">ดองเวร</div>
               </div>
             </div>
 
-            <div className="shift-section" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 700, color: 'var(--primary-blue-500)', fontSize: '15px' }}>
-                <CalendarDays size={18} /> เลขสุดท้ายที่เข้าของวันนั้นๆ
+            {/* ─── Last Person Table ─── */}
+            <div className="dash-last-table">
+              <div className="dash-last-header">
+                <CalendarDays size={18} /> เลขสุดท้ายที่เข้าของ{THAI_MONTHS[month - 1]}
               </div>
-              
+
               {dailyLastPersons.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-faint)', fontSize: '13px' }}>
                   ไม่มีข้อมูลตารางเวรในเดือนนี้
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
-                        <th style={{ padding: '10px 8px', color: 'var(--text-muted)' }}>วันที่</th>
-                        <th style={{ padding: '10px 8px', color: 'var(--text-muted)' }}>ผลัดสุดท้าย</th>
-                        <th style={{ padding: '10px 8px', color: 'var(--text-muted)' }}>รหัส</th>
-                        <th style={{ padding: '10px 8px', color: 'var(--text-muted)' }}>ชื่อทหาร</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dailyLastPersons.map((item, idx) => {
-                        const positionInfo = DUTY_POSITIONS.find(p => p.key === item.position);
-                        return (
-                          <tr key={item.date} style={{ borderBottom: '1px solid var(--border-subtle)', background: idx % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-secondary)' }}>
-                            <td style={{ padding: '12px 8px', fontWeight: 600 }}>{formatDateThai(item.date)}</td>
-                            <td style={{ padding: '12px 8px' }}>
-                              <span className={`badge`} style={{ background: `var(--shift${item.shift})`, color: '#fff', padding: '3px 8px' }}>
-                                ผลัด {item.shift}
-                              </span>
-                              <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--text-faint)' }}>{positionInfo?.label}</span>
-                            </td>
-                            <td style={{ padding: '12px 8px', fontFamily: '"JetBrains Mono", monospace', fontWeight: 600, color: 'var(--primary-blue-500)' }}>
-                              {String(item.personnelId).padStart(3, '0')}
-                            </td>
-                            <td style={{ padding: '12px 8px' }}>{item.personnelName}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                dailyLastPersons.map((item) => (
+                  <div key={item.date} className="dash-last-item">
+                    <div className="dash-last-date">{formatMonthDay(item.date)}</div>
+                    <div className="dash-last-shift" style={{ background: `var(--shift${item.shift})` }}>
+                      ผ.{item.shift}
+                    </div>
+                    <div className="dash-last-id">
+                      {String(item.personnelId).padStart(3, '0')}
+                    </div>
+                    <div className="dash-last-name">{item.personnelName}</div>
+                  </div>
+                ))
               )}
             </div>
           </>
