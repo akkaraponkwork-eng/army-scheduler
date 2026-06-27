@@ -52,7 +52,7 @@ export interface DailySchedule {
 
 export interface ExceptionEntry {
   personnelId: number;
-  reason: 'sick' | 'admin_duty';
+  reason: string;
   startDate: string;
   endDate: string;
 }

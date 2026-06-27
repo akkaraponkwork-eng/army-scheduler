@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
           personnelId: id,
           startDate: startDate,
           endDate: startDate, // Apply only for this single day
-          type: 'admin_duty',
           reason: 'ผู้ช่วยสิบเวร',
         });
       }
