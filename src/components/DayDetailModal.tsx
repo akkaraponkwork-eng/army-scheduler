@@ -130,7 +130,7 @@ export default function DayDetailModal({
             })()
           )}
 
-          {SHIFT_TIMES.map((shiftInfo, idx) => {
+          {assignments.length > 0 && SHIFT_TIMES.map((shiftInfo, idx) => {
             const shiftAssignments = assignments.filter((a) => a.shift === shiftInfo.shift);
             const isOpen = openShifts.includes(shiftInfo.shift);
             return (
