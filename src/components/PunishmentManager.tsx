@@ -134,7 +134,7 @@ export default function PunishmentManager({
                       emptyLabel="— เลือกทหาร —"
                     />
                     {selectedIds.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px', maxHeight: '100px', overflowY: 'auto', padding: '4px', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}>
                         {selectedIds.map(id => {
                           const p = personnelMap.get(id);
                           return (
