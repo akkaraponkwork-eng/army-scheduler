@@ -481,6 +481,7 @@ export default function HomePage() {
           date={selectedDate}
           assignments={selectedDayAssignments}
           personnel={personnel}
+          exceptions={exceptions}
           onClose={() => { setSelectedDate(null); setEditingAssignment(null); }}
           onEdit={(a) => setEditingAssignment(a)}
           onCopy={handleCopy}

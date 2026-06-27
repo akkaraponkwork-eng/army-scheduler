@@ -1,12 +1,13 @@
 'use client';
 import React, { useState, useCallback } from 'react';
-import { DutyAssignment, Personnel, SHIFT_TIMES, DUTY_POSITIONS } from '@/lib/types';
-import { Clipboard, Edit2, Inbox, Check, Copy, X, ChevronDown, Zap } from 'lucide-react';
+import { DutyAssignment, Personnel, SHIFT_TIMES, DUTY_POSITIONS, ExceptionEntry } from '@/lib/types';
+import { Clipboard, Edit2, Inbox, Check, Copy, X, ChevronDown, Zap, Star } from 'lucide-react';
 
 interface DayDetailModalProps {
   date: string;
   assignments: DutyAssignment[];
   personnel: Personnel[];
+  exceptions: ExceptionEntry[];
   onClose: () => void;
   onEdit: (assignment: DutyAssignment) => void;
   onCopy: () => void;
@@ -25,6 +26,7 @@ export default function DayDetailModal({
   date,
   assignments,
   personnel,
+  exceptions,
   onClose,
   onEdit,
   onCopy,
@@ -81,6 +83,51 @@ export default function DayDetailModal({
         </div>
 
         <div className="modal-body">
+          {assignments.length > 0 && (
+            (() => {
+              const dailyAssistants = exceptions
+                .filter(e => e.reason === 'ผู้ช่วยสิบเวร' && e.startDate <= date && e.endDate >= date)
+                .map(e => personnelMap.get(e.personnelId))
+                .filter(Boolean) as Personnel[];
+
+              if (dailyAssistants.length === 0) return null;
+
+              return (
+                <div style={{
+                  marginBottom: '16px',
+                  background: 'var(--amber-dim)',
+                  border: '1px solid var(--amber)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px'
+                }}>
+                  <Star size={18} style={{ color: 'var(--accent-gold)', marginTop: '2px', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-gold)', marginBottom: '4px' }}>
+                      ผู้ช่วยสิบเวรประจำวัน
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {dailyAssistants.map(p => (
+                        <div key={p.id} style={{ 
+                          background: 'rgba(255,255,255,0.5)', 
+                          padding: '2px 8px', 
+                          borderRadius: '4px', 
+                          fontSize: '12px',
+                          color: 'var(--text-main)',
+                          fontWeight: '500'
+                        }}>
+                          {String(p.id).padStart(3, '0')} - {p.name}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
+          )}
+
           {SHIFT_TIMES.map((shiftInfo, idx) => {
             const shiftAssignments = assignments.filter((a) => a.shift === shiftInfo.shift);
             const isOpen = openShifts.includes(shiftInfo.shift);
