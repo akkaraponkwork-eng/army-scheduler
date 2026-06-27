@@ -12,6 +12,7 @@ interface DayDetailModalProps {
   onEdit: (assignment: DutyAssignment) => void;
   onCopy: () => void;
   onOpenQuickGenerate?: () => void;
+  isAdmin?: boolean;
 }
 
 const SHIFT_COLORS = ['s1', 's2', 's3', 's4'];
@@ -31,6 +32,7 @@ export default function DayDetailModal({
   onEdit,
   onCopy,
   onOpenQuickGenerate,
+  isAdmin = false
 }: DayDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const personnelMap = new Map(personnel.map((p) => [p.id, p]));
@@ -156,7 +158,7 @@ export default function DayDetailModal({
                         <div className="position-label">
                           <span className="position-dot" />
                           {pos.label}
-                          {a && (
+                          {a && isAdmin && (
                             <button
                               className="btn btn-ghost btn-sm btn-icon"
                               style={{ marginLeft: 'auto', padding: '4px', minWidth: 'auto', minHeight: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -199,9 +201,9 @@ export default function DayDetailModal({
                 ยังไม่มีตารางเวรวันนี้
               </div>
               <div style={{ fontSize: '12px', marginTop: '8px', color: 'var(--text-faint)', marginBottom: '16px' }}>
-                กดปุ่มด้านล่างเพื่อจัดเวรอัตโนมัติ
+                {isAdmin ? 'กดปุ่มด้านล่างเพื่อจัดเวรอัตโนมัติ' : 'กรุณารอผู้ดูแลระบบจัดตารางเวร'}
               </div>
-              {onOpenQuickGenerate && (
+              {onOpenQuickGenerate && isAdmin && (
                 <button className="btn btn-primary" onClick={onOpenQuickGenerate} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <Zap size={16} /> สร้างเวรรายวัน
                 </button>
@@ -215,7 +217,7 @@ export default function DayDetailModal({
             {totalAssigned > 0 ? `${totalAssigned} นาย` : ''}
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
-            {assignments.length > 0 && onOpenQuickGenerate && (
+            {assignments.length > 0 && onOpenQuickGenerate && isAdmin && (
               <button
                 className="btn btn-ghost"
                 onClick={onOpenQuickGenerate}

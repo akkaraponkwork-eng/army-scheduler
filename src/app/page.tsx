@@ -498,6 +498,7 @@ export default function HomePage() {
           onEdit={(a) => setEditingAssignment(a)}
           onCopy={handleCopy}
           onOpenQuickGenerate={() => setShowQuickGenerate(true)}
+          isAdmin={isAdmin}
         />
       )}
 
