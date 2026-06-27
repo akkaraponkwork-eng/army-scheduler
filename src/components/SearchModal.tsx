@@ -68,7 +68,7 @@ export default function SearchModal({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
                 <div>
                   <div style={{ fontSize: '15px', fontWeight: 'bold' }}>{String(selectedPerson.id).padStart(3, '0')} - {selectedPerson.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-faint)' }}>สังกัด: {selectedPerson.unit}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-faint)' }}>สถานะ: {selectedPerson.status === 'active' ? 'ปกติ' : selectedPerson.status === 'assistant_sergeant' ? 'ผู้ช่วยสิบเวร' : 'ยกเว้น'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--blue)' }}>{myAssignments.length}</div>
