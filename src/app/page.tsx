@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Shield, Check, Copy, Zap, ShieldAlert, CalendarIcon, Gavel, Activity } from 'lucide-react';
+import { Shield, Check, Copy, Zap, ShieldAlert, CalendarIcon, Gavel, Activity, Search } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import Calendar from '@/components/Calendar';
@@ -11,6 +11,7 @@ import GenerateModal from '@/components/GenerateModal';
 import QuickGenerateModal from '@/components/QuickGenerateModal';
 import ExceptionManager from '@/components/ExceptionManager';
 import PunishmentManager from '@/components/PunishmentManager';
+import SearchModal from '@/components/SearchModal';
 import { Personnel, DutyAssignment, ExceptionEntry, PunishmentEntry } from '@/lib/types';
 import { formatScheduleText } from '@/lib/scheduler';
 
@@ -44,6 +45,7 @@ export default function HomePage() {
   const [showQuickGenerate, setShowQuickGenerate] = useState(false);
   const [showExceptions, setShowExceptions] = useState(false);
   const [showPunishments, setShowPunishments] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
@@ -466,13 +468,14 @@ export default function HomePage() {
           <span>ดองเวร</span>
           {punishments.length > 0 && <span className="bottom-nav-badge">{punishments.length}</span>}
         </button>
-        <Link
-          href="/dashboard"
-          className="bottom-nav-item"
-        >
+        <Link href="/dashboard" className="bottom-nav-item">
           <Activity size={20} />
           <span>สรุป</span>
         </Link>
+        <button className="bottom-nav-item" onClick={() => setShowSearch(true)}>
+          <Search size={20} />
+          <span>ค้นหา</span>
+        </button>
       </nav>
 
       {/* ─── Modals ─── */}
@@ -532,6 +535,14 @@ export default function HomePage() {
           onAdd={handleAddPunishments}
           onRemove={handleRemovePunishment}
           onClose={() => setShowPunishments(false)}
+        />
+      )}
+
+      {showSearch && (
+        <SearchModal
+          personnel={personnel}
+          scheduleData={scheduleData}
+          onClose={() => setShowSearch(false)}
         />
       )}
 

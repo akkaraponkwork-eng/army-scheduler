@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, ShieldAlert, Clock, CalendarDays, Activity } from 'lucide-react';
-import { Personnel, DutyAssignment, ExceptionEntry, PunishmentEntry, DUTY_POSITIONS } from '@/lib/types';
+import { ArrowLeft, Users, ShieldAlert, Clock, CalendarDays, Activity, Award, Moon } from 'lucide-react';
+import { Personnel, DutyAssignment, ExceptionEntry, PunishmentEntry } from '@/lib/types';
 
 export default function DashboardPage() {
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
@@ -77,6 +77,39 @@ export default function DashboardPage() {
   };
 
   const dailyLastPersons = getDailyLastPersons();
+
+  // Fairness Analytics
+  const getFairnessStats = () => {
+    const stats = new Map<number, { id: number; name: string; total: number; night: number }>();
+    
+    for (const p of personnel) {
+      if (p.status === 'active') {
+        stats.set(p.id, { id: p.id, name: p.name, total: 0, night: 0 });
+      }
+    }
+
+    for (const a of scheduleData) {
+      for (const pId of a.personIds || []) {
+        const pStat = stats.get(pId);
+        if (pStat) {
+          pStat.total += 1;
+          if (a.shift === 3 || a.shift === 4) {
+            pStat.night += 1;
+          }
+        }
+      }
+    }
+
+    const arr = Array.from(stats.values()).filter(s => s.total > 0);
+    
+    // Sort descending
+    const topTotal = [...arr].sort((a, b) => b.total - a.total).slice(0, 5);
+    const topNight = [...arr].sort((a, b) => b.night - a.night).slice(0, 5);
+
+    return { topTotal, topNight };
+  };
+
+  const { topTotal, topNight } = getFairnessStats();
 
   const formatDay = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -196,6 +229,69 @@ export default function DashboardPage() {
                   </div>
                 ))
               )}
+            </div>
+
+            {/* ─── Fairness Analytics ─── */}
+            <div style={{ marginTop: '24px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Award size={18} className="text-amber-500" /> สถิติความยุติธรรมประจำเดือน
+              </h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                {/* Top Total */}
+                <div style={{ background: 'var(--surface-mixed)', borderRadius: '12px', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--blue-dim)', padding: '12px', borderBottom: '1px solid var(--border)', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Activity size={16} className="text-blue-500" /> ผู้เข้าเวรเยอะที่สุด (รวม)
+                  </div>
+                  <div>
+                    {topTotal.length === 0 ? (
+                      <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>ไม่มีข้อมูล</div>
+                    ) : (
+                      topTotal.map((s, idx) => (
+                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', borderBottom: idx < topTotal.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: idx < 3 ? 'var(--accent-gold)' : 'var(--surface)', color: idx < 3 ? '#fff' : 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold' }}>
+                              {idx + 1}
+                            </div>
+                            <div style={{ fontSize: '14px' }}>
+                              <span style={{ color: 'var(--text-muted)', marginRight: '6px' }}>{String(s.id).padStart(3, '0')}</span>
+                              {s.name}
+                            </div>
+                          </div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--blue)' }}>{s.total} ครั้ง</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Top Night */}
+                <div style={{ background: 'var(--surface-mixed)', borderRadius: '12px', border: '1px solid var(--border-light)', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--indigo-dim)', padding: '12px', borderBottom: '1px solid var(--border)', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Moon size={16} className="text-indigo-500" /> สายแข็งผลัดดึก (ผลัด 3-4)
+                  </div>
+                  <div>
+                    {topNight.length === 0 ? (
+                      <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>ไม่มีข้อมูล</div>
+                    ) : (
+                      topNight.map((s, idx) => (
+                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', borderBottom: idx < topNight.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: idx < 3 ? 'var(--indigo)' : 'var(--surface)', color: idx < 3 ? '#fff' : 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold' }}>
+                              {idx + 1}
+                            </div>
+                            <div style={{ fontSize: '14px' }}>
+                              <span style={{ color: 'var(--text-muted)', marginRight: '6px' }}>{String(s.id).padStart(3, '0')}</span>
+                              {s.name}
+                            </div>
+                          </div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--indigo)' }}>{s.night} ครั้ง</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}
