@@ -544,9 +544,9 @@ body::before {
   -webkit-backdrop-filter: blur(6px);
   z-index: 200;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 1rem;
   animation: modalFadeIn 0.2s var(--ease-out);
 }
 
@@ -555,17 +555,15 @@ body::before {
 .modal-content {
   background: var(--bg-primary);
   border: 1px solid var(--border);
-  border-bottom: none;
-  border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+  border-radius: var(--r-2xl);
   width: 100%;
   max-width: 800px;
-  max-height: 92vh;
-  max-height: 92dvh;
+  max-height: 88vh;
+  max-height: 88dvh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -4px 32px rgba(0,0,0,0.12);
-  animation: modalSlideUp 0.3s var(--ease-spring);
-  padding-bottom: var(--safe-bottom);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  animation: modalScaleIn 0.25s var(--ease-spring);
   position: relative;
   overflow: hidden;
 }
@@ -582,24 +580,12 @@ body::before {
   z-index: 3;
 }
 
-@keyframes modalSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+@keyframes modalScaleIn {
+  from { transform: scale(0.95) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* Drag handle for mobile */
-.modal-content::after {
-  content: '';
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 36px;
-  height: 4px;
-  background: rgba(0,0,0,0.12);
-  border-radius: var(--r-full);
-  z-index: 3;
-}
+
 
 .modal-header {
   display: flex;
@@ -1109,22 +1095,7 @@ body::before {
   }
   .app-header { padding: 0 2rem; height: calc(56px + var(--safe-top)); }
 
-  .modal-overlay {
-    align-items: center;
-    padding: 1.5rem;
-  }
-  .modal-content {
-    border-radius: var(--r-2xl);
-    border-bottom: 1px solid var(--border);
-    max-height: 88vh;
-    animation: modalScaleIn 0.25s var(--ease-spring);
-  }
-  .modal-content::after { display: none; }
-  
-  @keyframes modalScaleIn {
-    from { transform: scale(0.95) translateY(10px); opacity: 0; }
-    to { transform: scale(1) translateY(0); opacity: 1; }
-  }
+
 
   .shift-positions { grid-template-columns: 1fr 1fr 1fr; }
   .position-cell { border-right: 1px solid var(--border-subtle); border-bottom: none; }

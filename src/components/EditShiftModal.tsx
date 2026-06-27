@@ -21,7 +21,6 @@ export default function EditShiftModal({
   const [person2Id, setPerson2Id] = useState<string>(String(assignment.person2Id ?? ''));
   const [saving, setSaving] = useState(false);
 
-  const activePersonnel = personnel.filter((p) => p.status === 'active');
   const shiftInfo = SHIFT_TIMES.find((s) => s.shift === assignment.shift);
   const positionInfo = DUTY_POSITIONS.find((p) => p.key === assignment.position);
 
@@ -57,7 +56,7 @@ export default function EditShiftModal({
             <div className="edit-field">
               <label className="edit-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><User size={14} /> คนที่ 1</label>
               <SearchableSelect
-                options={activePersonnel}
+                options={personnel}
                 value={person1Id}
                 onChange={setPerson1Id}
                 placeholder="พิมพ์เพื่อค้นหารหัส..."
@@ -68,7 +67,7 @@ export default function EditShiftModal({
             <div className="edit-field">
               <label className="edit-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><User size={14} /> คนที่ 2</label>
               <SearchableSelect
-                options={activePersonnel}
+                options={personnel}
                 value={person2Id}
                 onChange={setPerson2Id}
                 placeholder="พิมพ์เพื่อค้นหารหัส..."
@@ -87,7 +86,7 @@ export default function EditShiftModal({
             display: 'flex', alignItems: 'flex-start', gap: '6px'
           }}>
             <Lightbulb size={16} className="text-amber-500" style={{ flexShrink: 0, marginTop: '2px' }} />
-            <span>รายชื่อที่แสดงคือทหารที่มีสถานะ <strong style={{color: 'var(--accent-gold)'}}>Active</strong> เท่านั้น (ไม่รวมผู้ยกเว้น)</span>
+            <span>สามารถเลือกกำลังพลได้ <strong>ทั้งหมด</strong> (รวมถึงผู้ที่มีสถานะยกเว้นหรือป่วย)</span>
           </div>
         </div>
 
