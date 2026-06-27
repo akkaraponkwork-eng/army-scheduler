@@ -12,6 +12,7 @@ import QuickGenerateModal from '@/components/QuickGenerateModal';
 import ExceptionManager from '@/components/ExceptionManager';
 import PunishmentManager from '@/components/PunishmentManager';
 import SearchModal from '@/components/SearchModal';
+import AuthModal from '@/components/AuthModal';
 import { Personnel, DutyAssignment, ExceptionEntry, PunishmentEntry } from '@/lib/types';
 import { formatScheduleText } from '@/lib/scheduler';
 
@@ -46,6 +47,9 @@ export default function HomePage() {
   const [showExceptions, setShowExceptions] = useState(false);
   const [showPunishments, setShowPunishments] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
@@ -69,6 +73,11 @@ export default function HomePage() {
         if (Array.isArray(parsed)) {
           setPersonnel(parsed);
         }
+      }
+      
+      const adminState = localStorage.getItem('army_admin_mode');
+      if (adminState === 'true') {
+        setIsAdmin(true);
       }
     } catch {
       // Ignore parse error
@@ -322,22 +331,22 @@ export default function HomePage() {
         <div className="header-brand">
           <div className="header-emblem"><Shield size={20} color="var(--bg-void)" /></div>
           <div>
-            <div className="header-title">ARMY DUTY</div>
-            <div className="header-subtitle">ระบบจัดตารางเวรทหาร</div>
+            <h1 className="header-title">Army Duty Scheduler</h1>
+            <div className="header-subtitle">ระบบจัดตารางเวรยามอัตโนมัติ</div>
           </div>
         </div>
-        <div className="header-actions">
-          {loading ? (
-            <div className="status-bar">
-              <span className="loading-spinner" />
-              <span>กำลังโหลด</span>
-            </div>
-          ) : (
-            <div className="status-bar">
-              <span className="status-dot" />
-              <span>{activeCount} นาย · ยกเว้น {exemptCount}</span>
-            </div>
-          )}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn btn-secondary btn-icon" aria-label="แจ้งเตือน" onClick={() => {
+            if (isAdmin) {
+              setIsAdmin(false);
+              localStorage.removeItem('army_admin_mode');
+              showToast('info', 'ออกจากระบบผู้ดูแลแล้ว');
+            } else {
+              setShowAuth(true);
+            }
+          }}>
+            {isAdmin ? <Shield size={18} className="text-green-500" /> : <Shield size={18} style={{ opacity: 0.5 }} />}
+          </button>
         </div>
       </header>
 
@@ -348,57 +357,61 @@ export default function HomePage() {
           <Link href="/dashboard" className="btn btn-secondary" id="btn-open-dashboard">
             <Activity size={16} /> แดชบอร์ด
           </Link>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowGenerate(true)}
-            disabled={loading || personnel.length === 0}
-            id="btn-open-generate"
-          >
-            <Zap size={16} /> สร้างเวร
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setShowExceptions(true)}
-            disabled={loading}
-            id="btn-open-exceptions"
-          >
-            <ShieldAlert size={16} /> ยกเว้น
-            {exemptCount > 0 && (
-              <span style={{
-                background: 'var(--red)',
-                color: '#fff',
-                borderRadius: 'var(--r-full)',
-                padding: '1px 6px',
-                fontSize: '10px',
-                fontWeight: '800',
-                marginLeft: '-2px',
-              }}>
-                {exemptCount}
-              </span>
-            )}
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setShowPunishments(true)}
-            disabled={loading}
-            id="btn-open-punishments"
-            style={{ color: 'var(--red)', borderColor: 'var(--border)' }}
-          >
-            <Gavel size={16} /> ดองเวร
-            {punishments.length > 0 && (
-              <span style={{
-                background: 'var(--red)',
-                color: '#fff',
-                borderRadius: 'var(--r-full)',
-                padding: '1px 6px',
-                fontSize: '10px',
-                fontWeight: '800',
-                marginLeft: '-2px',
-              }}>
-                {punishments.length}
-              </span>
-            )}
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowGenerate(true)}
+                disabled={loading || personnel.length === 0}
+                id="btn-open-generate"
+              >
+                <Zap size={16} /> สร้างเวร
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowExceptions(true)}
+                disabled={loading}
+                id="btn-open-exceptions"
+              >
+                <ShieldAlert size={16} /> ยกเว้น
+                {exemptCount > 0 && (
+                  <span style={{
+                    background: 'var(--red)',
+                    color: '#fff',
+                    borderRadius: 'var(--r-full)',
+                    padding: '1px 6px',
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    marginLeft: '-2px',
+                  }}>
+                    {exemptCount}
+                  </span>
+                )}
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowPunishments(true)}
+                disabled={loading}
+                id="btn-open-punishments"
+                style={{ color: 'var(--red)', borderColor: 'var(--border)' }}
+              >
+                <Gavel size={16} /> ดองเวร
+                {punishments.length > 0 && (
+                  <span style={{
+                    background: 'var(--red)',
+                    color: '#fff',
+                    borderRadius: 'var(--r-full)',
+                    padding: '1px 6px',
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    marginLeft: '-2px',
+                  }}>
+                    {punishments.length}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
 
           <div className="toolbar-separator" />
 
@@ -426,7 +439,7 @@ export default function HomePage() {
           onDayClick={(dateStr) => {
             setSelectedDate(dateStr);
             const dayAssignments = scheduleData.filter((a) => a.date === dateStr);
-            if (dayAssignments.length === 0) {
+            if (dayAssignments.length === 0 && isAdmin) {
               setShowQuickGenerate(true);
             }
           }}
@@ -444,30 +457,26 @@ export default function HomePage() {
           <CalendarIcon size={20} />
           <span>ปฏิทิน</span>
         </button>
-        <button
-          className="bottom-nav-item"
-          onClick={() => setShowGenerate(true)}
-          disabled={loading || personnel.length === 0}
-        >
-          <Zap size={20} />
-          <span>สร้างเวร</span>
-        </button>
-        <button
-          className="bottom-nav-item"
-          onClick={() => setShowExceptions(true)}
-        >
-          <ShieldAlert size={20} />
-          <span>ยกเว้น</span>
-          {exemptCount > 0 && <span className="bottom-nav-badge">{exemptCount}</span>}
-        </button>
-        <button
-          className="bottom-nav-item"
-          onClick={() => setShowPunishments(true)}
-        >
-          <Gavel size={20} />
-          <span>ดองเวร</span>
-          {punishments.length > 0 && <span className="bottom-nav-badge">{punishments.length}</span>}
-        </button>
+        {isAdmin && (
+          <>
+            <button
+              className="bottom-nav-item"
+              onClick={() => setShowExceptions(true)}
+            >
+              <ShieldAlert size={20} />
+              <span>ยกเว้น</span>
+              {exemptCount > 0 && <span className="bottom-nav-badge">{exemptCount}</span>}
+            </button>
+            <button
+              className="bottom-nav-item"
+              onClick={() => setShowPunishments(true)}
+            >
+              <Gavel size={20} />
+              <span>ดองเวร</span>
+              {punishments.length > 0 && <span className="bottom-nav-badge">{punishments.length}</span>}
+            </button>
+          </>
+        )}
         <Link href="/dashboard" className="bottom-nav-item">
           <Activity size={20} />
           <span>สรุป</span>
@@ -543,6 +552,18 @@ export default function HomePage() {
           personnel={personnel}
           scheduleData={scheduleData}
           onClose={() => setShowSearch(false)}
+        />
+      )}
+
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={() => {
+            setIsAdmin(true);
+            localStorage.setItem('army_admin_mode', 'true');
+            setShowAuth(false);
+            showToast('success', 'เข้าสู่ระบบผู้ดูแลสำเร็จ');
+          }}
         />
       )}
 

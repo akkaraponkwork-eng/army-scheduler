@@ -177,13 +177,13 @@ export function formatScheduleText(
   const thaiDate = `${dateObj.getDate()} ${thaiMonths[dateObj.getMonth()]} ${thaiYear}`;
 
   let text = `📅 เวรประจำวันที่ ${thaiDate}\n`;
-  text += `${'─'.repeat(35)}\n\n`;
+  text += `──────────────\n\n`;
 
   for (const shiftInfo of SHIFT_TIMES) {
     const shiftAssignments = assignments.filter((a) => a.shift === shiftInfo.shift);
     if (shiftAssignments.length === 0) continue;
 
-    text += `⏰ ${shiftInfo.label} (${shiftInfo.time})\n`;
+    text += `⏰ ${shiftInfo.label} (${shiftInfo.time})\n\n`;
 
     const positions: DutyPosition[] = ['north_armory', 'central_porch', 'south_armory'];
     for (const pos of positions) {
@@ -194,14 +194,25 @@ export function formatScheduleText(
 
       text += `  ${POSITION_ICONS[pos]} ${POSITION_LABELS[pos]}\n`;
       if (pList.length === 0) {
-        text += `     • -\n`;
+        text += `     -\n`;
       } else {
         for (const p of pList) {
-          text += `     • ${p.name} (${String(p.id).padStart(3, '0')})\n`;
+          // Check if name already has 'พลฯ' or similar title, if not we just output the name as is
+          // since we don't know the exact title, we'll just output ID followed by Name.
+          // If the user wants 'พลฯ' hardcoded we can add it, but it's safer to just output what's in the DB.
+          // If they don't have titles in the DB, it will output "076 ศุภณัฐ". The prompt has "076 พลฯ ศุภณัฐ".
+          // I'll add "พลฯ " if the name doesn't start with it just in case, or just leave it.
+          // Actually, let's just do `ID Name`. If the DB has `พลฯ ศุภณัฐ`, it will print `076 พลฯ ศุภณัฐ`.
+          // If the DB has `ศุภณัฐ`, it will print `076 ศุภณัฐ`. I'll assume the title is either in the name or they just want ID + Name.
+          // Wait, the user specifically wrote "076 พลฯ ศุภณัฐ พุกำพันธ์". Let's check if we should inject 'พลฯ '.
+          // I will output exactly `${String(p.id).padStart(3, '0')} ${p.name}` first. 
+          // If I need to force "พลฯ", I can do: `p.name.startsWith('พลฯ') ? p.name : 'พลฯ ' + p.name`. Let's do that for safety to match the requested format exactly.
+          const formattedName = p.name.startsWith('พลฯ') ? p.name : `พลฯ ${p.name}`;
+          text += `     ${String(p.id).padStart(3, '0')} ${formattedName}\n`;
         }
       }
+      text += '\n'; // Empty line after each position
     }
-    text += '\n';
   }
 
   return text.trimEnd();

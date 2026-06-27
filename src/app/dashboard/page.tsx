@@ -163,6 +163,15 @@ export default function DashboardPage() {
       </header>
 
       <main className="app-main" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '0 20px', marginTop: '16px' }}>
+          <Link 
+            href={`/print?year=${year}&month=${month}`}
+            className="btn btn-secondary" 
+            style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid var(--border)' }}
+          >
+            <span style={{ fontSize: '18px' }}>🖨️</span> พิมพ์ / ออก PDF ประจำเดือน
+          </Link>
+        </div>
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-faint)' }}>
             <div className="loading-spinner" style={{ margin: '0 auto 10px', width: '24px', height: '24px' }} />
