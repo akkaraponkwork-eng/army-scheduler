@@ -187,7 +187,7 @@ export default function PunishmentManager({
               </div>
             )}
 
-            <div className="exceptions-body">
+            <div className="exceptions-body" style={{ maxHeight: '300px', overflowY: 'auto' }}>
               {punishments.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)', fontSize: '13px' }}>
                   ไม่มีรายการดองเวร
