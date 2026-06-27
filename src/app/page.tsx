@@ -421,7 +421,13 @@ export default function HomePage() {
           month={month}
           scheduleData={scheduleData}
           personnel={personnel}
-          onDayClick={setSelectedDate}
+          onDayClick={(dateStr) => {
+            setSelectedDate(dateStr);
+            const dayAssignments = scheduleData.filter((a) => a.date === dateStr);
+            if (dayAssignments.length === 0) {
+              setShowQuickGenerate(true);
+            }
+          }}
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
         />

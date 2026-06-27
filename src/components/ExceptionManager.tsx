@@ -176,9 +176,9 @@ export default function ExceptionManager({
                           {formatDateThai(ex.startDate)} ถึง {formatDateThai(ex.endDate)}
                         </div>
                       </div>
-                      <span className={`badge ${ex.reason === 'sick' ? 'badge-sick' : 'badge-admin'}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {ex.reason === 'sick' ? <Activity size={10} /> : <ClipboardList size={10} />}
-                        {ex.reason === 'sick' ? 'ป่วย' : 'ธุระการ'}
+                      <span className={`badge ${ex.reason === 'sick' ? 'badge-sick' : ex.reason === 'ผู้ช่วยสิบเวร' ? 'badge-assistant' : 'badge-admin'}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {ex.reason === 'sick' ? <Activity size={10} /> : ex.reason === 'ผู้ช่วยสิบเวร' ? <Star size={10} /> : <ClipboardList size={10} />}
+                        {ex.reason === 'sick' ? 'ผู้ป่วย' : ex.reason === 'admin_duty' ? 'ธุระการ' : ex.reason}
                       </span>
                       <button
                         className="btn btn-danger btn-sm"
