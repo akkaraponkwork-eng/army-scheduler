@@ -1,16 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPersonnel, getExceptions, getPunishments, saveSchedule } from '@/lib/googleSheets';
+import { getPersonnel, getExceptions, getPunishments, saveSchedule, saveException } from '@/lib/googleSheets';
 import { generateSchedule } from '@/lib/scheduler';
 
 export async function POST(request: NextRequest) {
   try {
-    const { startDate, endDate, startFromId } = await request.json();
+    const { startDate, endDate, startFromId, assistantSergeants } = await request.json();
 
     if (!startDate || !endDate) {
       return NextResponse.json(
         { error: 'startDate and endDate are required' },
         { status: 400 }
       );
+    }
+
+    if (assistantSergeants && Array.isArray(assistantSergeants) && assistantSergeants.length > 0) {
+      // Save assistant sergeants as exceptions first
+      for (const id of assistantSergeants) {
+        await saveException({
+          personnelId: id,
+          startDate: startDate,
+          endDate: startDate, // Apply only for this single day
+          type: 'admin_duty',
+          reason: 'ผู้ช่วยสิบเวร',
+        });
+      }
     }
 
     const [personnel, exceptions, punishments] = await Promise.all([

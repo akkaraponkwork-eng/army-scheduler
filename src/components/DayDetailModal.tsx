@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useCallback } from 'react';
 import { DutyAssignment, Personnel, SHIFT_TIMES, DUTY_POSITIONS } from '@/lib/types';
-import { Clipboard, Edit2, Inbox, Check, Copy, X, ChevronDown } from 'lucide-react';
+import { Clipboard, Edit2, Inbox, Check, Copy, X, ChevronDown, Zap } from 'lucide-react';
 
 interface DayDetailModalProps {
   date: string;
@@ -10,6 +10,7 @@ interface DayDetailModalProps {
   onClose: () => void;
   onEdit: (assignment: DutyAssignment) => void;
   onCopy: () => void;
+  onOpenQuickGenerate?: () => void;
 }
 
 const SHIFT_COLORS = ['s1', 's2', 's3', 's4'];
@@ -27,6 +28,7 @@ export default function DayDetailModal({
   onClose,
   onEdit,
   onCopy,
+  onOpenQuickGenerate,
 }: DayDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const personnelMap = new Map(personnel.map((p) => [p.id, p]));
@@ -149,9 +151,14 @@ export default function DayDetailModal({
               <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)' }}>
                 ยังไม่มีตารางเวรวันนี้
               </div>
-              <div style={{ fontSize: '12px', marginTop: '8px', color: 'var(--text-faint)' }}>
-                กดปุ่ม &quot;⚡ สร้างเวร&quot; เพื่อสร้างอัตโนมัติ
+              <div style={{ fontSize: '12px', marginTop: '8px', color: 'var(--text-faint)', marginBottom: '16px' }}>
+                กดปุ่มด้านล่างเพื่อจัดเวรอัตโนมัติ
               </div>
+              {onOpenQuickGenerate && (
+                <button className="btn btn-primary" onClick={onOpenQuickGenerate} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Zap size={16} /> สร้างเวรรายวัน
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -161,6 +168,14 @@ export default function DayDetailModal({
             {totalAssigned > 0 ? `${totalAssigned} นาย` : ''}
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
+            {assignments.length > 0 && onOpenQuickGenerate && (
+              <button
+                className="btn btn-ghost"
+                onClick={onOpenQuickGenerate}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Zap size={14} className="text-amber-500" /> จัดเวรใหม่</span>
+              </button>
+            )}
             {assignments.length > 0 && (
               <button
                 className={`btn ${copied ? 'btn-primary' : 'btn-copy'}`}

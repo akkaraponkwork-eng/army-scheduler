@@ -8,6 +8,7 @@ import Calendar from '@/components/Calendar';
 import DayDetailModal from '@/components/DayDetailModal';
 import EditShiftModal from '@/components/EditShiftModal';
 import GenerateModal from '@/components/GenerateModal';
+import QuickGenerateModal from '@/components/QuickGenerateModal';
 import ExceptionManager from '@/components/ExceptionManager';
 import PunishmentManager from '@/components/PunishmentManager';
 import { Personnel, DutyAssignment, ExceptionEntry, PunishmentEntry } from '@/lib/types';
@@ -40,6 +41,7 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editingAssignment, setEditingAssignment] = useState<DutyAssignment | null>(null);
   const [showGenerate, setShowGenerate] = useState(false);
+  const [showQuickGenerate, setShowQuickGenerate] = useState(false);
   const [showExceptions, setShowExceptions] = useState(false);
   const [showPunishments, setShowPunishments] = useState(false);
 
@@ -232,17 +234,36 @@ export default function HomePage() {
   };
 
   // ─── Generate ───
-  const handleGenerate = async (startDate: string, endDate: string, startFromId: number) => {
+  const handleGenerate = async (startDate: string, endDate: string, startFromId: number, assistantSergeants?: number[]) => {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startDate, endDate, startFromId }),
+      body: JSON.stringify({ startDate, endDate, startFromId, assistantSergeants }),
     });
     if (!res.ok) throw new Error('Failed');
     const result = await res.json();
     showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Zap size={14} /> สร้างเวร {result.count} รายการสำเร็จ</span>);
     await loadSchedule(year, month);
   };
+
+  const getDefaultStartId = useCallback((dateStr: string) => {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() - 1);
+    const prevDate = d.toISOString().split('T')[0];
+    
+    const prevAssignments = scheduleData.filter(a => a.date === prevDate);
+    if (prevAssignments.length > 0) {
+      const shift4 = prevAssignments.filter(a => a.shift === 4);
+      const lastA = shift4.length > 0 ? shift4[shift4.length - 1] : prevAssignments[prevAssignments.length - 1];
+      if (lastA && lastA.personIds && lastA.personIds.length > 0) {
+        let lastId = lastA.personIds[lastA.personIds.length - 1];
+        let next = lastId + 1;
+        if (next > 125) next = 1; // Assuming max 125, but actually should just return next. The user can edit it.
+        return next;
+      }
+    }
+    return 1;
+  }, [scheduleData]);
 
   // ─── Exceptions ───
   const handleAddException = async (entry: ExceptionEntry) => {
@@ -449,7 +470,7 @@ export default function HomePage() {
       </nav>
 
       {/* ─── Modals ─── */}
-      {selectedDate && (
+      {selectedDate && !showQuickGenerate && (
         <DayDetailModal
           date={selectedDate}
           assignments={selectedDayAssignments}
@@ -457,6 +478,17 @@ export default function HomePage() {
           onClose={() => { setSelectedDate(null); setEditingAssignment(null); }}
           onEdit={(a) => setEditingAssignment(a)}
           onCopy={handleCopy}
+          onOpenQuickGenerate={() => setShowQuickGenerate(true)}
+        />
+      )}
+
+      {showQuickGenerate && selectedDate && (
+        <QuickGenerateModal
+          date={selectedDate}
+          defaultStartId={getDefaultStartId(selectedDate)}
+          personnel={personnel}
+          onClose={() => setShowQuickGenerate(false)}
+          onGenerate={handleGenerate}
         />
       )}
 
