@@ -638,6 +638,7 @@ body::before {
   border-radius: var(--r-md);
   overflow: hidden;
   background: var(--bg-elevated);
+  flex-shrink: 0;
 }
 
 .shift-header {
