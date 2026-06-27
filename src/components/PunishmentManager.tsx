@@ -98,7 +98,7 @@ export default function PunishmentManager({
         </div>
 
         <div className="modal-body" style={{ gap: '12px' }}>
-          <div className="exceptions-panel">
+          <div className="exceptions-panel" style={{ flexShrink: 0, paddingBottom: '24px' }}>
             <div className="exceptions-header">
               <span className="exceptions-header-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> รายการดองเวร</span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

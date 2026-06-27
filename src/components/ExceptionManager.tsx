@@ -102,7 +102,7 @@ export default function ExceptionManager({
           )}
 
           {/* Temporary Exceptions */}
-          <div className="exceptions-panel">
+          <div className="exceptions-panel" style={{ flexShrink: 0, paddingBottom: '24px' }}>
             <div className="exceptions-header">
               <span className="exceptions-header-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> ยกเว้นชั่วคราว</span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
