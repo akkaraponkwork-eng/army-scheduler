@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useCallback } from 'react';
 import { DutyAssignment, Personnel, SHIFT_TIMES, DUTY_POSITIONS } from '@/lib/types';
-import { Clipboard, Edit2, Inbox, Check, Copy, X } from 'lucide-react';
+import { Clipboard, Edit2, Inbox, Check, Copy, X, ChevronDown } from 'lucide-react';
 
 interface DayDetailModalProps {
   date: string;
@@ -30,6 +30,20 @@ export default function DayDetailModal({
 }: DayDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const personnelMap = new Map(personnel.map((p) => [p.id, p]));
+  const [openShifts, setOpenShifts] = useState<number[]>([]);
+
+  React.useEffect(() => {
+    // Open all on desktop, open only shift 1 on mobile
+    if (window.innerWidth > 768) {
+      setOpenShifts([1, 2, 3, 4]);
+    } else {
+      setOpenShifts([1]);
+    }
+  }, []);
+
+  const toggleShift = (shift: number) => {
+    setOpenShifts(prev => prev.includes(shift) ? prev.filter(s => s !== shift) : [...prev, shift]);
+  };
 
   const formatDate = (d: string) => {
     const dateObj = new Date(d);
@@ -67,16 +81,26 @@ export default function DayDetailModal({
         <div className="modal-body">
           {SHIFT_TIMES.map((shiftInfo, idx) => {
             const shiftAssignments = assignments.filter((a) => a.shift === shiftInfo.shift);
+            const isOpen = openShifts.includes(shiftInfo.shift);
             return (
-              <div key={shiftInfo.shift} className="shift-section">
-                <div className={`shift-header ${SHIFT_COLORS[idx]}`}>
-                  <span>{shiftInfo.label}</span>
-                  <span className="shift-time">{shiftInfo.start} – {shiftInfo.end}</span>
+              <div key={shiftInfo.shift} className="shift-section" style={{ marginBottom: '12px', border: '1px solid var(--border-light)', borderRadius: '10px', overflow: 'hidden' }}>
+                <div 
+                  className={`shift-header ${SHIFT_COLORS[idx]}`} 
+                  onClick={() => toggleShift(shiftInfo.shift)}
+                  style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: isOpen ? '10px 10px 0 0' : '10px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600 }}>{shiftInfo.label}</span>
+                    <span className="shift-time" style={{ opacity: 0.8, fontSize: '12px' }}>({shiftInfo.start} – {shiftInfo.end})</span>
+                  </div>
+                  <ChevronDown size={18} style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', opacity: 0.7 }} />
                 </div>
-                <div className="shift-positions">
-                  {DUTY_POSITIONS.map((pos) => {
-                    const a = shiftAssignments.find((x) => x.position === pos.key);
-                    const pList = a?.personIds?.map(id => personnelMap.get(id)).filter(Boolean) as Personnel[] || [];
+                
+                {isOpen && (
+                  <div className="shift-positions" style={{ padding: '12px', background: 'var(--card-bg)' }}>
+                    {DUTY_POSITIONS.map((pos) => {
+                      const a = shiftAssignments.find((x) => x.position === pos.key);
+                      const pList = a?.personIds?.map(id => personnelMap.get(id)).filter(Boolean) as Personnel[] || [];
 
                     return (
                       <div key={pos.key} className={`position-cell ${POS_CLASS[pos.key]}`}>
@@ -110,6 +134,7 @@ export default function DayDetailModal({
                     );
                   })}
                 </div>
+                )}
               </div>
             );
           })}
