@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var scheduler_1 = require("./src/lib/scheduler");
+var personnel = Array.from({ length: 100 }).map(function (_, i) { return ({ id: i + 1, name: "Person ".concat(i + 1), status: 'active' }); });
+var exceptions = [];
+var punishments = [];
+var startDate = '2026-06-27';
+var endDate = '2026-06-27';
+var assignments = (0, scheduler_1.generateSchedule)(personnel, exceptions, punishments, startDate, endDate, 1);
+console.log(JSON.stringify(assignments.slice(0, 5), null, 2));

@@ -45,14 +45,14 @@ export function generateSchedule(
   // Build sorted active personnel list
   const allPersonnel = [...personnel].sort((a, b) => a.id - b.id);
 
-  // Track rotation pointer across all days
-  // We'll use a different approach: track a global queue position
-  let queuePointer = 0;
-
-  // Calculate initial pointer position based on startFromId
+  // Track rotation pointer across all days by ID instead of index
+  // to avoid skipping people when activeToday changes size
+  let currentPointerId = startFromId;
   const activeForStart = getActivePersonnel(allPersonnel, exceptions, startDate);
   const startIdx = activeForStart.findIndex((p) => p.id >= startFromId);
-  if (startIdx >= 0) queuePointer = startIdx;
+  if (startIdx >= 0) {
+    currentPointerId = activeForStart[startIdx].id;
+  }
 
   // Iterate through each day
   let current = new Date(startDate);
@@ -87,8 +87,18 @@ export function generateSchedule(
         if (activeToday.length > 0) {
           let attempts = 0;
           while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
-            const p = activeToday[queuePointer % activeToday.length];
-            queuePointer = (queuePointer + 1) % activeToday.length;
+            let idx = activeToday.findIndex(p => p.id >= currentPointerId);
+            if (idx === -1) idx = 0; // Wrap around to start if no one has id >= currentPointerId
+            
+            const p = activeToday[idx];
+            
+            // Move pointer to the next person for the next draw
+            if (idx + 1 < activeToday.length) {
+              currentPointerId = activeToday[idx + 1].id;
+            } else {
+              currentPointerId = activeToday[0].id;
+            }
+
             if (!assignedForThisShift.find(x => x.id === p.id)) {
               assignedForThisShift.push(p);
             }

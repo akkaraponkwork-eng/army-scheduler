@@ -168,14 +168,19 @@ export async function getScheduleForMonth(year: number, month: number): Promise<
 
     const schedule = rows
       .filter((row) => row[0]?.startsWith(prefix))
-      .map((row) => ({
-        date: row[0],
-        shift: parseInt(row[1]),
-        position: row[2] as DutyPosition,
-        personIds: row[3] && String(row[3]).includes(',') 
+      .map((row) => {
+        const personIds = row[3] && String(row[3]).includes(',') 
           ? String(row[3]).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
-          : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id)),
-      }));
+          : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id));
+        return {
+          date: row[0],
+          shift: parseInt(row[1]),
+          position: row[2] as DutyPosition,
+          personIds,
+          person1Id: personIds[0] || null,
+          person2Id: personIds[1] || null,
+        };
+      });
 
     cache.schedule.set(cacheKey, { data: schedule, timestamp: Date.now() });
     return schedule;
@@ -195,14 +200,19 @@ export async function getScheduleForDate(date: string): Promise<DutyAssignment[]
     const rows = response.data.values || [];
     return rows
       .filter((row) => row[0] === date)
-      .map((row) => ({
-        date: row[0],
-        shift: parseInt(row[1]),
-        position: row[2] as DutyPosition,
-        personIds: row[3] && String(row[3]).includes(',') 
+      .map((row) => {
+        const personIds = row[3] && String(row[3]).includes(',') 
           ? String(row[3]).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
-          : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id)),
-      }));
+          : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id));
+        return {
+          date: row[0],
+          shift: parseInt(row[1]),
+          position: row[2] as DutyPosition,
+          personIds,
+          person1Id: personIds[0] || null,
+          person2Id: personIds[1] || null,
+        };
+      });
   } catch {
     return [];
   }
