@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { ShieldAlert, Star, Clock, Activity, ClipboardList, Trash2, Save, X, Plus } from 'lucide-react';
+import { ShieldAlert, Star, Clock, Activity, ClipboardList, Trash2, Save, X, Plus, Edit2 } from 'lucide-react';
 import { Personnel, ExceptionEntry } from '@/lib/types';
 import SearchableSelect from '@/components/SearchableSelect';
 
@@ -27,6 +27,7 @@ export default function ExceptionManager({
   });
   const [adding, setAdding] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<ExceptionEntry | null>(null);
 
   const personnelMap = new Map(personnel.map((p) => [p.id, p]));
   const activePersonnel = personnel.filter((p) => p.status === 'active');
@@ -38,6 +39,9 @@ export default function ExceptionManager({
     if (!form.personnelId) return;
     setAdding(true);
     try {
+      if (editingEntry) {
+        await onRemove(editingEntry.personnelId, editingEntry.startDate);
+      }
       await onAdd({
         personnelId: parseInt(form.personnelId),
         reason: form.reason,
@@ -45,6 +49,7 @@ export default function ExceptionManager({
         endDate: form.endDate,
       });
       setShowForm(false);
+      setEditingEntry(null);
       setForm({
         personnelId: '',
         reason: 'sick',
@@ -104,7 +109,20 @@ export default function ExceptionManager({
                 <span className="badge badge-sick">{exceptions.length} รายการ</span>
                 <button
                   className="btn btn-primary btn-sm"
-                  onClick={() => setShowForm(!showForm)}
+                  onClick={() => {
+                    if (showForm) {
+                      setShowForm(false);
+                      setEditingEntry(null);
+                      setForm({
+                        personnelId: '',
+                        reason: 'sick',
+                        startDate: new Date().toISOString().split('T')[0],
+                        endDate: new Date().toISOString().split('T')[0],
+                      });
+                    } else {
+                      setShowForm(true);
+                    }
+                  }}
                   id="btn-add-exception"
                 >
                   {showForm ? <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><X size={14} /> ยกเลิก</span> : <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Plus size={14} /> เพิ่ม</span>}
@@ -180,14 +198,34 @@ export default function ExceptionManager({
                         {ex.reason === 'sick' ? <Activity size={10} /> : ex.reason === 'ผู้ช่วยสิบเวร' ? <Star size={10} /> : <ClipboardList size={10} />}
                         {ex.reason === 'sick' ? 'ผู้ป่วย' : ex.reason === 'admin_duty' ? 'ธุระการ' : ex.reason}
                       </span>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => onRemove(ex.personnelId, ex.startDate)}
-                        title="ลบ"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => {
+                            setEditingEntry(ex);
+                            setForm({
+                              personnelId: String(ex.personnelId),
+                              reason: ex.reason as any,
+                              startDate: ex.startDate,
+                              endDate: ex.endDate,
+                            });
+                            setShowForm(true);
+                            document.querySelector('.modal-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          title="แก้ไข"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => onRemove(ex.personnelId, ex.startDate)}
+                          title="ลบ"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   );
                 })

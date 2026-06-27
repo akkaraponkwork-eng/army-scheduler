@@ -10,7 +10,7 @@ export interface Personnel {
   status: PersonnelStatus;
 }
 
-export type DutyPosition = 'north_armory' | 'central_porch' | 'south_armory';
+export type DutyPosition = 'north_armory' | 'central_porch' | 'south_armory' | 'special_duty';
 
 export interface DutyPositionInfo {
   key: DutyPosition;
@@ -22,6 +22,7 @@ export const DUTY_POSITIONS: DutyPositionInfo[] = [
   { key: 'north_armory', label: 'หน้าคลังอาวุธทิศเหนือ', icon: '🔴' },
   { key: 'central_porch', label: 'หน้ามุขกลาง', icon: '🟡' },
   { key: 'south_armory', label: 'หน้าคลังอาวุธทิศใต้', icon: '🟢' },
+  { key: 'special_duty', label: 'เวรพิเศษ', icon: '🚨' },
 ];
 
 export interface ShiftTime {

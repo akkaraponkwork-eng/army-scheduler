@@ -1257,3 +1257,32 @@ body::before {
 }
 .select-option.empty:hover { background: transparent; }
 
+/* Dashboard Interactive Styles */
+.dash-stat-card {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.dash-stat-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+  border-color: var(--primary-blue-300);
+}
+
+.dash-stat-card:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+/* Statistics animations */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-anim-delay-1 { animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.stat-anim-delay-2 { animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
+.stat-anim-delay-3 { animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+
+.stat-bar-fill {
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}

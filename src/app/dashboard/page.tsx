@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Users, ShieldAlert, Clock, CalendarDays, Activity, Award, Moon } from 'lucide-react';
 import { Personnel, DutyAssignment, ExceptionEntry, PunishmentEntry } from '@/lib/types';
+import PersonnelListModal from '@/components/PersonnelListModal';
 
 export default function DashboardPage() {
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
@@ -15,6 +16,8 @@ export default function DashboardPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
+
+  const [modalType, setModalType] = useState<'all' | 'active' | 'exempt' | 'punished' | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,6 +130,26 @@ export default function DashboardPage() {
     'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
   ];
 
+  const getPersonnelForModal = () => {
+    switch(modalType) {
+      case 'all': return personnel;
+      case 'active': return personnel.filter(p => p.status === 'active');
+      case 'exempt': return personnel.filter(p => p.status === 'assistant_sergeant' || exceptions.some(e => e.personnelId === p.id));
+      case 'punished': return punishments.map(p => personnelMap.get(p.personnelId)).filter(Boolean) as Personnel[];
+      default: return [];
+    }
+  };
+
+  const getModalTitle = () => {
+    switch(modalType) {
+      case 'all': return 'กำลังพลทั้งหมด';
+      case 'active': return 'กำลังพลที่ใช้งานได้';
+      case 'exempt': return 'กำลังพลที่ถูกยกเว้น / ป่วย';
+      case 'punished': return 'กำลังพลที่ถูกดองเวร';
+      default: return '';
+    }
+  };
+
   return (
     <div className="app-wrapper">
       <header className="app-header">
@@ -181,7 +204,7 @@ export default function DashboardPage() {
           <>
             {/* ─── Summary Cards ─── */}
             <div className="dash-stats">
-              <div className="dash-stat-card">
+              <div className="dash-stat-card stat-anim-delay-1" onClick={() => setModalType('all')}>
                 <div className="dash-stat-icon" style={{ background: 'var(--primary-blue-glow)', color: 'var(--primary-blue-500)' }}>
                   <Users size={20} />
                 </div>
@@ -189,7 +212,7 @@ export default function DashboardPage() {
                 <div className="dash-stat-label">กำลังพลทั้งหมด</div>
               </div>
 
-              <div className="dash-stat-card">
+              <div className="dash-stat-card stat-anim-delay-1" onClick={() => setModalType('active')}>
                 <div className="dash-stat-icon" style={{ background: 'var(--green-dim)', color: 'var(--green)' }}>
                   <Activity size={20} />
                 </div>
@@ -197,7 +220,7 @@ export default function DashboardPage() {
                 <div className="dash-stat-label">ใช้งานได้</div>
               </div>
 
-              <div className="dash-stat-card">
+              <div className="dash-stat-card stat-anim-delay-2" onClick={() => setModalType('exempt')}>
                 <div className="dash-stat-icon" style={{ background: 'var(--red-dim)', color: 'var(--red)' }}>
                   <ShieldAlert size={20} />
                 </div>
@@ -205,7 +228,7 @@ export default function DashboardPage() {
                 <div className="dash-stat-label">ยกเว้น / ป่วย</div>
               </div>
 
-              <div className="dash-stat-card">
+              <div className="dash-stat-card stat-anim-delay-2" onClick={() => setModalType('punished')}>
                 <div className="dash-stat-icon" style={{ background: 'var(--orange-dim)', color: 'var(--orange)' }}>
                   <Clock size={20} />
                 </div>
@@ -241,7 +264,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ─── Fairness Analytics ─── */}
-            <div style={{ marginTop: '24px' }}>
+            <div style={{ marginTop: '24px' }} className="stat-anim-delay-3">
               <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Award size={18} className="text-amber-500" /> สถิติความยุติธรรมประจำเดือน
               </h3>
@@ -302,6 +325,15 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+            
+            {modalType && (
+              <PersonnelListModal
+                title={getModalTitle()}
+                type={modalType}
+                personnel={getPersonnelForModal()}
+                onClose={() => setModalType(null)}
+              />
+            )}
           </>
         )}
       </main>
