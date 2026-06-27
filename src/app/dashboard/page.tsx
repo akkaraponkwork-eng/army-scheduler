@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
       const lastAssignment = latestShiftAssignments[latestShiftAssignments.length - 1];
       if (lastAssignment) {
-        const lastId = lastAssignment.person2Id || lastAssignment.person1Id;
+        const lastId = lastAssignment.personIds?.[lastAssignment.personIds.length - 1];
         if (lastId) {
           results.push({
             date,

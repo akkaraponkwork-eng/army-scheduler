@@ -42,8 +42,7 @@ export interface DutyAssignment {
   date: string;          // YYYY-MM-DD
   shift: number;         // 1-4
   position: DutyPosition;
-  person1Id: number | null;
-  person2Id: number | null;
+  personIds: number[];
 }
 
 export interface DailySchedule {

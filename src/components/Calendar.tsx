@@ -181,7 +181,8 @@ export default function Calendar({
               {cell.isCurrentMonth && (
                 <div className="day-preview">
                   {preview.slice(0, 4).map(([shift, a]) => {
-                    const p1 = a.person1Id ? personnelMap.get(a.person1Id) : null;
+                    const p1Id = a.personIds?.[0];
+                    const p1 = p1Id ? personnelMap.get(p1Id) : null;
                     const name = p1 ? p1.name.split(' ')[0].substring(0, 6) : '—';
                     return (
                       <div key={shift} className={`day-preview-item shift-${shift}`}>

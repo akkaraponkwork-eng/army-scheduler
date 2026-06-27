@@ -17,8 +17,7 @@ export default function EditShiftModal({
   onClose,
   onSave,
 }: EditShiftModalProps) {
-  const [person1Id, setPerson1Id] = useState<string>(String(assignment.person1Id ?? ''));
-  const [person2Id, setPerson2Id] = useState<string>(String(assignment.person2Id ?? ''));
+  const [personIds, setPersonIds] = useState<string[]>(assignment.personIds?.map(String) || []);
   const [saving, setSaving] = useState(false);
 
   const shiftInfo = SHIFT_TIMES.find((s) => s.shift === assignment.shift);
@@ -29,13 +28,20 @@ export default function EditShiftModal({
     try {
       await onSave({
         ...assignment,
-        person1Id: person1Id ? parseInt(person1Id) : null,
-        person2Id: person2Id ? parseInt(person2Id) : null,
+        personIds: personIds.map(id => parseInt(id)).filter(id => !isNaN(id)),
       });
       onClose();
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleAddPerson = () => setPersonIds([...personIds, '']);
+  const handleRemovePerson = (idx: number) => setPersonIds(personIds.filter((_, i) => i !== idx));
+  const handleChangePerson = (idx: number, val: string) => {
+    const newIds = [...personIds];
+    newIds[idx] = val;
+    setPersonIds(newIds);
   };
 
   return (
@@ -52,28 +58,33 @@ export default function EditShiftModal({
         </div>
 
         <div className="modal-body">
-          <div className="edit-grid">
-            <div className="edit-field">
-              <label className="edit-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><User size={14} /> คนที่ 1</label>
-              <SearchableSelect
-                options={personnel}
-                value={person1Id}
-                onChange={setPerson1Id}
-                placeholder="พิมพ์เพื่อค้นหารหัส..."
-                emptyLabel="— ไม่ระบุ —"
-              />
-            </div>
-
-            <div className="edit-field">
-              <label className="edit-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><User size={14} /> คนที่ 2</label>
-              <SearchableSelect
-                options={personnel}
-                value={person2Id}
-                onChange={setPerson2Id}
-                placeholder="พิมพ์เพื่อค้นหารหัส..."
-                emptyLabel="— ไม่ระบุ —"
-              />
-            </div>
+          <div className="edit-grid" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {personIds.map((idStr, idx) => (
+              <div key={idx} className="edit-field" style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  <label className="edit-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <User size={14} /> คนที่ {idx + 1}
+                  </label>
+                  <SearchableSelect
+                    options={personnel}
+                    value={idStr}
+                    onChange={(val) => handleChangePerson(idx, val)}
+                    placeholder="พิมพ์เพื่อค้นหารหัส..."
+                    emptyLabel="— ไม่ระบุ —"
+                  />
+                </div>
+                <button 
+                  className="btn btn-danger btn-icon" 
+                  style={{ marginBottom: '2px', height: '36px', minWidth: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={() => handleRemovePerson(idx)}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+            <button className="btn btn-ghost btn-sm" onClick={handleAddPerson} style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
+              + เพิ่มกำลังพล
+            </button>
           </div>
 
           <div style={{

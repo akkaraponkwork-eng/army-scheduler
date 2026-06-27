@@ -172,8 +172,9 @@ export async function getScheduleForMonth(year: number, month: number): Promise<
         date: row[0],
         shift: parseInt(row[1]),
         position: row[2] as DutyPosition,
-        person1Id: row[3] ? parseInt(row[3]) : null,
-        person2Id: row[4] ? parseInt(row[4]) : null,
+        personIds: row[3] && String(row[3]).includes(',') 
+          ? String(row[3]).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+          : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id)),
       }));
 
     cache.schedule.set(cacheKey, { data: schedule, timestamp: Date.now() });
@@ -198,8 +199,9 @@ export async function getScheduleForDate(date: string): Promise<DutyAssignment[]
         date: row[0],
         shift: parseInt(row[1]),
         position: row[2] as DutyPosition,
-        person1Id: row[3] ? parseInt(row[3]) : null,
-        person2Id: row[4] ? parseInt(row[4]) : null,
+        personIds: row[3] && String(row[3]).includes(',') 
+          ? String(row[3]).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+          : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id)),
       }));
   } catch {
     return [];
@@ -238,8 +240,8 @@ export async function saveSchedule(assignments: DutyAssignment[]): Promise<void>
       assignment.date,
       String(assignment.shift),
       assignment.position,
-      assignment.person1Id !== null ? String(assignment.person1Id) : '',
-      assignment.person2Id !== null ? String(assignment.person2Id) : '',
+      assignment.personIds.join(', '),
+      '',
     ];
 
     if (existingMap.has(key)) {
@@ -476,7 +478,7 @@ export async function ensureSheetsExist(): Promise<void> {
           spreadsheetId: SPREADSHEET_ID,
           range: `'${SCHEDULE_SHEET}'!A1:E1`,
           valueInputOption: 'RAW',
-          requestBody: { values: [['วันที่', 'ผลัด', 'ตำแหน่ง', 'รหัสคนที่1', 'รหัสคนที่2']] },
+          requestBody: { values: [['วันที่', 'ผลัด', 'ตำแหน่ง', 'รายชื่อรหัส (คั่นด้วยคอมมา)']] },
         })
       );
     }

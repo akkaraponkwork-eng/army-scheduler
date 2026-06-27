@@ -60,51 +60,57 @@ export function generateSchedule(
 
   while (current <= end) {
     const dateStr = formatDate(current);
-    const activeToday = getActivePersonnel(allPersonnel, exceptions, dateStr);
-
-    if (activeToday.length === 0) {
-      current.setDate(current.getDate() + 1);
-      continue;
-    }
+    
+    // Find all punished personnel for today across all shifts
+    const punishedAllDay = punishments.filter(p => p.startDate <= dateStr && p.endDate >= dateStr);
+    const punishedIdsAllDay = punishedAllDay.map(p => p.personnelId);
+    
+    // Get active personnel today, but EXCLUDE anyone who is punished today
+    let activeToday = getActivePersonnel(allPersonnel, exceptions, dateStr);
+    activeToday = activeToday.filter(p => !punishedIdsAllDay.includes(p.id));
 
     // For each shift (1-4)
     for (let shift = 1; shift <= 4; shift++) {
-      const punishedToday = punishments.filter(p => p.startDate <= dateStr && p.endDate >= dateStr && p.shift === shift);
-      const punishedPersonnel = punishedToday.map(p => allPersonnel.find(x => x.id === p.personnelId)).filter(Boolean) as Personnel[];
+      const punishedTodayForShift = punishedAllDay.filter(p => p.shift === shift);
+      const punishedPersonnel = punishedTodayForShift.map(p => allPersonnel.find(x => x.id === p.personnelId)).filter(Boolean) as Personnel[];
       
       const assignedForThisShift: Personnel[] = [];
       
-      for (const p of punishedPersonnel) {
-        if (assignedForThisShift.length < 6 && !assignedForThisShift.find(x => x.id === p.id)) {
-          assignedForThisShift.push(p);
+      if (punishedPersonnel.length > 0) {
+        // This is a punishment shift!
+        // Only put punished personnel in this shift. No normal personnel.
+        for (const p of punishedPersonnel) {
+           assignedForThisShift.push(p);
+        }
+      } else {
+        // Normal shift: draw 6 from activeToday (if available)
+        if (activeToday.length > 0) {
+          let attempts = 0;
+          while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
+            const p = activeToday[queuePointer % activeToday.length];
+            queuePointer = (queuePointer + 1) % activeToday.length;
+            if (!assignedForThisShift.find(x => x.id === p.id)) {
+              assignedForThisShift.push(p);
+            }
+            attempts++;
+          }
         }
       }
       
-      let attempts = 0;
-      while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
-        const p = activeToday[queuePointer % activeToday.length];
-        queuePointer = (queuePointer + 1) % activeToday.length;
-        if (!assignedForThisShift.find(x => x.id === p.id)) {
-          assignedForThisShift.push(p);
-        }
-        attempts++;
+      // Distribute `assignedForThisShift` into the 3 positions
+      const posCount = positions.length;
+      const distribution = Array(posCount).fill(0).map(() => [] as Personnel[]);
+      
+      for (let i = 0; i < assignedForThisShift.length; i++) {
+        distribution[i % posCount].push(assignedForThisShift[i]);
       }
       
-      while (assignedForThisShift.length < 6) {
-        assignedForThisShift.push(undefined as any);
-      }
-      
-      let idx = 0;
-      for (const position of positions) {
-        const person1 = assignedForThisShift[idx++];
-        const person2 = assignedForThisShift[idx++];
-
+      for (let i = 0; i < posCount; i++) {
         assignments.push({
           date: dateStr,
           shift,
-          position,
-          person1Id: person1?.id ?? null,
-          person2Id: person2?.id ?? null,
+          position: positions[i],
+          personIds: distribution[i].map(p => p.id),
         });
       }
     }
@@ -174,15 +180,16 @@ export function formatScheduleText(
       const a = shiftAssignments.find((x) => x.position === pos);
       if (!a) continue;
 
-      const p1 = a.person1Id ? personnelMap.get(a.person1Id) : null;
-      const p2 = a.person2Id ? personnelMap.get(a.person2Id) : null;
-
-      const p1Text = p1 ? `${p1.name} (${String(p1.id).padStart(3, '0')})` : '-';
-      const p2Text = p2 ? `${p2.name} (${String(p2.id).padStart(3, '0')})` : '-';
+      const pList = a.personIds.map(id => personnelMap.get(id)).filter(Boolean) as Personnel[];
 
       text += `  ${POSITION_ICONS[pos]} ${POSITION_LABELS[pos]}\n`;
-      text += `     • ${p1Text}\n`;
-      text += `     • ${p2Text}\n`;
+      if (pList.length === 0) {
+        text += `     • -\n`;
+      } else {
+        for (const p of pList) {
+          text += `     • ${p.name} (${String(p.id).padStart(3, '0')})\n`;
+        }
+      }
     }
     text += '\n';
   }

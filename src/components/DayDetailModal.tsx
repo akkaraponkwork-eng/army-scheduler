@@ -49,9 +49,7 @@ export default function DayDetailModal({
   }, [onCopy]);
 
   // Count total assigned personnel
-  const totalAssigned = assignments.reduce((sum, a) => {
-    return sum + (a.person1Id ? 1 : 0) + (a.person2Id ? 1 : 0);
-  }, 0);
+  const totalAssigned = assignments.reduce((sum, a) => sum + (a.personIds?.length || 0), 0);
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -78,8 +76,7 @@ export default function DayDetailModal({
                 <div className="shift-positions">
                   {DUTY_POSITIONS.map((pos) => {
                     const a = shiftAssignments.find((x) => x.position === pos.key);
-                    const p1 = a?.person1Id ? personnelMap.get(a.person1Id) : null;
-                    const p2 = a?.person2Id ? personnelMap.get(a.person2Id) : null;
+                    const pList = a?.personIds?.map(id => personnelMap.get(id)).filter(Boolean) as Personnel[] || [];
 
                     return (
                       <div key={pos.key} className={`position-cell ${POS_CLASS[pos.key]}`}>
@@ -98,19 +95,13 @@ export default function DayDetailModal({
                           )}
                         </div>
                         <div className="personnel-badge">
-                          {p1 ? (
-                            <div className="personnel-item">
-                              <span className="personnel-id">{String(p1.id).padStart(3, '0')}</span>
-                              <span className="personnel-name">{p1.name}</span>
-                            </div>
-                          ) : (
-                            <div className="personnel-empty">— ว่าง —</div>
-                          )}
-                          {p2 ? (
-                            <div className="personnel-item">
-                              <span className="personnel-id">{String(p2.id).padStart(3, '0')}</span>
-                              <span className="personnel-name">{p2.name}</span>
-                            </div>
+                          {pList.length > 0 ? (
+                            pList.map(p => (
+                              <div key={p.id} className="personnel-item">
+                                <span className="personnel-id">{String(p.id).padStart(3, '0')}</span>
+                                <span className="personnel-name">{p.name}</span>
+                              </div>
+                            ))
                           ) : (
                             <div className="personnel-empty">— ว่าง —</div>
                           )}
