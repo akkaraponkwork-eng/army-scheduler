@@ -565,7 +565,21 @@ body::before {
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);
   animation: modalScaleIn 0.25s var(--ease-spring);
   position: relative;
-  overflow: auto;
+  overflow: hidden;
+}
+
+/* Mobile: full-screen modal for easier scrolling */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+  .modal-content {
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
 }
 
 /* Blue accent line */
@@ -611,12 +625,14 @@ body::before {
 .modal-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding: 0 1rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 10px;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .modal-footer {
