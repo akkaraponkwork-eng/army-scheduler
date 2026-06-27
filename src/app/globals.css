@@ -565,7 +565,7 @@ body::before {
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);
   animation: modalScaleIn 0.25s var(--ease-spring);
   position: relative;
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* Blue accent line */
