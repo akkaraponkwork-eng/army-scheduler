@@ -73,15 +73,15 @@ function PrintContent() {
           <thead>
             <tr>
               <th rowSpan={2} style={{ width: '40px' }}>วันที่</th>
-              {DUTY_POSITIONS.map(pos => (
-                <th key={pos.key} colSpan={4}>{pos.label}</th>
+              {SHIFT_TIMES.map(shift => (
+                <th key={shift.shift} colSpan={DUTY_POSITIONS.length}>ผลัด {shift.shift} ({shift.start}-{shift.end})</th>
               ))}
             </tr>
             <tr>
-              {DUTY_POSITIONS.map(pos => (
-                <React.Fragment key={pos.key}>
-                  {SHIFT_TIMES.map(shift => (
-                    <th key={shift.shift} style={{ fontSize: '10px' }}>ผ.{shift.shift}<br/>{shift.start}-{shift.end}</th>
+              {SHIFT_TIMES.map(shift => (
+                <React.Fragment key={shift.shift}>
+                  {DUTY_POSITIONS.map(pos => (
+                    <th key={pos.key} style={{ fontSize: '10px' }}>{pos.label}</th>
                   ))}
                 </React.Fragment>
               ))}
@@ -95,19 +95,23 @@ function PrintContent() {
               return (
                 <tr key={day}>
                   <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{day}</td>
-                  {DUTY_POSITIONS.map(pos => (
-                    <React.Fragment key={pos.key}>
-                      {SHIFT_TIMES.map(shift => {
+                  {SHIFT_TIMES.map(shift => (
+                    <React.Fragment key={shift.shift}>
+                      {DUTY_POSITIONS.map(pos => {
                         const assignment = dayAssignments.find(a => a.position === pos.key && a.shift === shift.shift);
                         const p1Id = assignment?.personIds?.[0];
                         const p1 = p1Id ? personnelMap.get(p1Id) : null;
                         const p2Id = assignment?.personIds?.[1];
                         const p2 = p2Id ? personnelMap.get(p2Id) : null;
+                        // Handle potential 3rd person for special duty overflow
+                        const p3Id = assignment?.personIds?.[2];
+                        const p3 = p3Id ? personnelMap.get(p3Id) : null;
                         
                         return (
-                          <td key={shift.shift} style={{ fontSize: '10px', textAlign: 'center', verticalAlign: 'top', padding: '4px' }}>
+                          <td key={pos.key} style={{ fontSize: '10px', textAlign: 'center', verticalAlign: 'top', padding: '4px' }}>
                             {p1 ? <div>{String(p1.id).padStart(3, '0')} {p1.name.split(' ')[0]}</div> : '-'}
                             {p2 ? <div>{String(p2.id).padStart(3, '0')} {p2.name.split(' ')[0]}</div> : ''}
+                            {p3 ? <div style={{ color: 'var(--orange)', fontWeight: 'bold' }}>{String(p3.id).padStart(3, '0')} {p3.name.split(' ')[0]}</div> : ''}
                           </td>
                         );
                       })}
