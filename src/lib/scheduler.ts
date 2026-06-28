@@ -69,112 +69,63 @@ export function generateSchedule(
     let activeToday = getActivePersonnel(allPersonnel, exceptions, dateStr);
     activeToday = activeToday.filter(p => !punishedIdsAllDay.includes(p.id));
 
-    if (punishedIdsAllDay.length >= 24) {
-      // Auto-distribute punished personnel across all shifts for the day
-      const punishedAllDayPersonnel = punishedAllDay
-        .map(p => allPersonnel.find(x => x.id === p.personnelId))
-        .filter(Boolean) as Personnel[];
-
-      const shiftAllocations: Personnel[][] = [[], [], [], []];
-      let pIdx = 0;
+    // Normal logic: For each shift (1-4)
+    for (let shift = 1; shift <= 4; shift++) {
+      const punishedTodayForShift = punishedAllDay.filter(p => p.shift === shift);
+      const punishedPersonnel = punishedTodayForShift.map(p => allPersonnel.find(x => x.id === p.personnelId)).filter(Boolean) as Personnel[];
       
-      // Shift 1 gets up to 6
-      while(shiftAllocations[0].length < 6 && pIdx < punishedAllDayPersonnel.length) {
-        shiftAllocations[0].push(punishedAllDayPersonnel[pIdx++]);
-      }
-      // Shift 2 gets up to 6
-      while(shiftAllocations[1].length < 6 && pIdx < punishedAllDayPersonnel.length) {
-        shiftAllocations[1].push(punishedAllDayPersonnel[pIdx++]);
-      }
+      const assignedForThisShift: Personnel[] = [];
       
-      // Remaining distributed to Shift 3 and 4 roughly equally
-      const remaining = punishedAllDayPersonnel.slice(pIdx);
-      const half = Math.ceil(remaining.length / 2);
-      shiftAllocations[2] = remaining.slice(0, half);
-      shiftAllocations[3] = remaining.slice(half);
-
-      for (let shift = 1; shift <= 4; shift++) {
-        const assignedForThisShift = shiftAllocations[shift - 1];
-        const posCount = positions.length;
-        const distribution = Array(posCount).fill(0).map(() => [] as Personnel[]);
-        
-        const perPos = Math.floor(assignedForThisShift.length / posCount);
-        const remainder = assignedForThisShift.length % posCount;
-        let currentIdx = 0;
-        for (let i = 0; i < posCount; i++) {
-          const countForThisPos = perPos + (i < remainder ? 1 : 0);
-          distribution[i] = assignedForThisShift.slice(currentIdx, currentIdx + countForThisPos);
-          currentIdx += countForThisPos;
+      if (punishedPersonnel.length > 0) {
+        // This is a punishment shift!
+        for (const p of punishedPersonnel) {
+           assignedForThisShift.push(p);
         }
-        
-        for (let i = 0; i < posCount; i++) {
-          assignments.push({
-            date: dateStr,
-            shift,
-            position: positions[i],
-            personIds: distribution[i].map(p => p.id),
-          });
-        }
-      }
-    } else {
-      // Normal logic: For each shift (1-4)
-      for (let shift = 1; shift <= 4; shift++) {
-        const punishedTodayForShift = punishedAllDay.filter(p => p.shift === shift);
-        const punishedPersonnel = punishedTodayForShift.map(p => allPersonnel.find(x => x.id === p.personnelId)).filter(Boolean) as Personnel[];
-        
-        const assignedForThisShift: Personnel[] = [];
-        
-        if (punishedPersonnel.length > 0) {
-          // This is a punishment shift!
-          for (const p of punishedPersonnel) {
-             assignedForThisShift.push(p);
-          }
-        } else {
-          // Normal shift: draw 6 from activeToday (if available)
-          if (activeToday.length > 0) {
-            let attempts = 0;
-            while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
-              let idx = activeToday.findIndex(p => p.id >= currentPointerId);
-              if (idx === -1) idx = 0; // Wrap around to start if no one has id >= currentPointerId
-              
-              const p = activeToday[idx];
-              
-              // Move pointer to the next person for the next draw
-              if (idx + 1 < activeToday.length) {
-                currentPointerId = activeToday[idx + 1].id;
-              } else {
-                currentPointerId = activeToday[0].id;
-              }
-
-              if (!assignedForThisShift.find(x => x.id === p.id)) {
-                assignedForThisShift.push(p);
-              }
-              attempts++;
+      } else {
+        // Normal shift: draw 6 from activeToday (if available)
+        if (activeToday.length > 0) {
+          let attempts = 0;
+          while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
+            let idx = activeToday.findIndex(p => p.id >= currentPointerId);
+            if (idx === -1) idx = 0; // Wrap around to start if no one has id >= currentPointerId
+            
+            const p = activeToday[idx];
+            
+            // Move pointer to the next person for the next draw
+            if (idx + 1 < activeToday.length) {
+              currentPointerId = activeToday[idx + 1].id;
+            } else {
+              currentPointerId = activeToday[0].id;
             }
+
+            if (!assignedForThisShift.find(x => x.id === p.id)) {
+              assignedForThisShift.push(p);
+            }
+            attempts++;
           }
         }
-        
-        // Distribute `assignedForThisShift` into the 3 positions
-        const posCount = positions.length;
-        const distribution = Array(posCount).fill(0).map(() => [] as Personnel[]);
-        
-        const perPos = Math.floor(assignedForThisShift.length / posCount);
-        const remainder = assignedForThisShift.length % posCount;
-        let currentIdx = 0;
-        for (let i = 0; i < posCount; i++) {
-          const countForThisPos = perPos + (i < remainder ? 1 : 0);
-          distribution[i] = assignedForThisShift.slice(currentIdx, currentIdx + countForThisPos);
-          currentIdx += countForThisPos;
-        }
-        
-        for (let i = 0; i < posCount; i++) {
-          assignments.push({
-            date: dateStr,
-            shift,
-            position: positions[i],
-            personIds: distribution[i].map(p => p.id),
-          });
-        }
+      }
+      
+      // Distribute `assignedForThisShift` into the 3 positions
+      const posCount = positions.length;
+      const distribution = Array(posCount).fill(0).map(() => [] as Personnel[]);
+      
+      const perPos = Math.floor(assignedForThisShift.length / posCount);
+      const remainder = assignedForThisShift.length % posCount;
+      let currentIdx = 0;
+      for (let i = 0; i < posCount; i++) {
+        const countForThisPos = perPos + (i < remainder ? 1 : 0);
+        distribution[i] = assignedForThisShift.slice(currentIdx, currentIdx + countForThisPos);
+        currentIdx += countForThisPos;
+      }
+      
+      for (let i = 0; i < posCount; i++) {
+        assignments.push({
+          date: dateStr,
+          shift,
+          position: positions[i],
+          personIds: distribution[i].map(p => p.id),
+        });
       }
     }
 
