@@ -201,25 +201,48 @@ export default function HomePage() {
     ? scheduleData.filter((a) => a.date === selectedDate)
     : [];
 
-  // ─── Copy ───
   const handleCopy = useCallback(() => {
     if (!selectedDate) return;
-    const text = formatScheduleText(selectedDate, selectedDayAssignments, personnel);
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอกสำเร็จ</span>);
-    }).catch(() => {
-      // Fallback for mobile
+    const text = formatScheduleText(selectedDate, selectedDayAssignments, personnel, exceptions);
+    
+    // If clipboard API is not available (e.g. non-HTTPS mobile), fallback synchronously
+    if (!navigator.clipboard) {
       const textarea = document.createElement('textarea');
       textarea.value = text;
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand('copy');
+      try {
+        document.execCommand('copy');
+        showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอกสำเร็จ</span>);
+      } catch (err) {
+        showToast('error', 'ไม่สามารถคัดลอกได้ กรุณาคัดลอกด้วยตนเอง');
+      }
       document.body.removeChild(textarea);
+      return;
+    }
+
+    // Try clipboard API, and if it fails, catch it but we can't synchronously fallback here
+    navigator.clipboard.writeText(text).then(() => {
       showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอกสำเร็จ</span>);
+    }).catch(() => {
+      // Browsers might block this if it happens asynchronously, but we try anyway
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('success', <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Copy size={14} /> คัดลอกสำเร็จ (Fallback)</span>);
+      } catch (err) {
+        showToast('error', 'ไม่สามารถคัดลอกได้');
+      }
+      document.body.removeChild(textarea);
     });
-  }, [selectedDate, selectedDayAssignments, personnel, showToast]);
+  }, [selectedDate, selectedDayAssignments, personnel, exceptions, showToast]);
 
   // ─── Edit ───
   const handleSaveEdit = async (updated: DutyAssignment) => {

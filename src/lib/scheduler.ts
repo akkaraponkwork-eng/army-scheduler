@@ -187,7 +187,8 @@ function formatDate(date: Date): string {
 export function formatScheduleText(
   date: string,
   assignments: DutyAssignment[],
-  personnel: Personnel[]
+  personnel: Personnel[],
+  exceptions: ExceptionEntry[] = []
 ): string {
   const SHIFT_TIMES = [
     { shift: 1, label: 'ผลัด 1', time: '21:00-23:00' },
@@ -221,6 +222,21 @@ export function formatScheduleText(
 
   let text = `📅 เวรประจำวันที่ ${thaiDate}\n`;
   text += `──────────────\n\n`;
+
+  const dailyAssistants = exceptions
+    .filter(e => e.reason === 'ผู้ช่วยสิบเวร' && e.startDate <= date && e.endDate >= date)
+    .map(e => personnelMap.get(e.personnelId))
+    .filter(Boolean) as Personnel[];
+
+  if (dailyAssistants.length > 0) {
+    text += `⭐ ผู้ช่วยสิบเวรประจำวัน\n`;
+    for (const p of dailyAssistants) {
+      const formattedName = p.name.startsWith('พลฯ') ? p.name : `พลฯ ${p.name}`;
+      text += `     ${String(p.id).padStart(3, '0')} ${formattedName}\n`;
+    }
+    text += `\n`;
+  }
+
 
   for (const shiftInfo of SHIFT_TIMES) {
     const shiftAssignments = assignments.filter((a) => a.shift === shiftInfo.shift);
