@@ -81,28 +81,28 @@ export function generateSchedule(
         for (const p of punishedPersonnel) {
            assignedForThisShift.push(p);
         }
-      } else {
-        // Normal shift: draw 6 from activeToday (if available)
-        if (activeToday.length > 0) {
-          let attempts = 0;
-          while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
-            let idx = activeToday.findIndex(p => p.id >= currentPointerId);
-            if (idx === -1) idx = 0; // Wrap around to start if no one has id >= currentPointerId
-            
-            const p = activeToday[idx];
-            
-            // Move pointer to the next person for the next draw
-            if (idx + 1 < activeToday.length) {
-              currentPointerId = activeToday[idx + 1].id;
-            } else {
-              currentPointerId = activeToday[0].id;
-            }
-
-            if (!assignedForThisShift.find(x => x.id === p.id)) {
-              assignedForThisShift.push(p);
-            }
-            attempts++;
+      }
+      
+      // Fill remaining slots with normal active personnel (if available)
+      if (activeToday.length > 0) {
+        let attempts = 0;
+        while (assignedForThisShift.length < 6 && attempts < activeToday.length * 2) {
+          let idx = activeToday.findIndex(p => p.id >= currentPointerId);
+          if (idx === -1) idx = 0; // Wrap around to start if no one has id >= currentPointerId
+          
+          const p = activeToday[idx];
+          
+          // Move pointer to the next person for the next draw
+          if (idx + 1 < activeToday.length) {
+            currentPointerId = activeToday[idx + 1].id;
+          } else {
+            currentPointerId = activeToday[0].id;
           }
+
+          if (!assignedForThisShift.find(x => x.id === p.id)) {
+            assignedForThisShift.push(p);
+          }
+          attempts++;
         }
       }
       

@@ -169,7 +169,7 @@ export async function getScheduleForMonth(year: number, month: number): Promise<
     const schedule = rows
       .filter((row) => row[0]?.startsWith(prefix))
       .map((row) => {
-        const personIds = row[3] && String(row[3]).includes(',') 
+        const personIds = row[3] && String(row[3]).includes(',')
           ? String(row[3]).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
           : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id));
         return {
@@ -201,7 +201,7 @@ export async function getScheduleForDate(date: string): Promise<DutyAssignment[]
     return rows
       .filter((row) => row[0] === date)
       .map((row) => {
-        const personIds = row[3] && String(row[3]).includes(',') 
+        const personIds = row[3] && String(row[3]).includes(',')
           ? String(row[3]).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
           : [row[3] ? parseInt(row[3]) : null, row[4] ? parseInt(row[4]) : null].filter((id): id is number => id !== null && !isNaN(id));
         return {
@@ -301,7 +301,7 @@ export async function getExceptions(): Promise<ExceptionEntry[]> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${EXCEPTIONS_SHEET}'!A2:D500`,
+      range: `'${EXCEPTIONS_SHEET}'!A2:D5000`,
     });
 
     const rows = response.data.values || [];
@@ -337,7 +337,7 @@ export async function saveException(entry: ExceptionEntry): Promise<void> {
       ]],
     },
   });
-  
+
   cache.exceptions = null;
 }
 
@@ -346,7 +346,7 @@ export async function clearDailyAssistants(startDate: string, endDate: string): 
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${EXCEPTIONS_SHEET}'!A2:D5000`,
+      range: `'${EXCEPTIONS_SHEET}'!A2:D50000`,
     });
 
     const rows = response.data.values || [];
@@ -377,7 +377,7 @@ export async function removeException(personnelId: number, startDate: string): P
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${EXCEPTIONS_SHEET}'!A2:D500`,
+      range: `'${EXCEPTIONS_SHEET}'!A2:D5000`,
     });
 
     const rows = response.data.values || [];
@@ -411,7 +411,7 @@ export async function getPunishments(): Promise<PunishmentEntry[]> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${PUNISHMENTS_SHEET}'!A2:D500`,
+      range: `'${PUNISHMENTS_SHEET}'!A2:D5000`,
     });
 
     const rows = response.data.values || [];
@@ -434,7 +434,7 @@ export async function getPunishments(): Promise<PunishmentEntry[]> {
 export async function savePunishments(entries: PunishmentEntry[]): Promise<void> {
   const sheets = await getSheetsClient();
   await ensureSheetsExist();
-  
+
   const values = entries.map((entry) => [
     String(entry.personnelId),
     String(entry.shift),
@@ -448,7 +448,7 @@ export async function savePunishments(entries: PunishmentEntry[]): Promise<void>
     valueInputOption: 'RAW',
     requestBody: { values },
   });
-  
+
   cache.punishments = null;
 }
 
@@ -457,7 +457,7 @@ export async function removePunishment(personnelId: number, startDate: string): 
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${PUNISHMENTS_SHEET}'!A2:D500`,
+      range: `'${PUNISHMENTS_SHEET}'!A2:D5000`,
     });
 
     const rows = response.data.values || [];
