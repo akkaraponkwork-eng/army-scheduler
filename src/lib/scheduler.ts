@@ -98,8 +98,13 @@ export function generateSchedule(
         const posCount = positions.length;
         const distribution = Array(posCount).fill(0).map(() => [] as Personnel[]);
         
-        for (let i = 0; i < assignedForThisShift.length; i++) {
-          distribution[i % posCount].push(assignedForThisShift[i]);
+        const perPos = Math.floor(assignedForThisShift.length / posCount);
+        const remainder = assignedForThisShift.length % posCount;
+        let currentIdx = 0;
+        for (let i = 0; i < posCount; i++) {
+          const countForThisPos = perPos + (i < remainder ? 1 : 0);
+          distribution[i] = assignedForThisShift.slice(currentIdx, currentIdx + countForThisPos);
+          currentIdx += countForThisPos;
         }
         
         for (let i = 0; i < posCount; i++) {
@@ -153,8 +158,13 @@ export function generateSchedule(
         const posCount = positions.length;
         const distribution = Array(posCount).fill(0).map(() => [] as Personnel[]);
         
-        for (let i = 0; i < assignedForThisShift.length; i++) {
-          distribution[i % posCount].push(assignedForThisShift[i]);
+        const perPos = Math.floor(assignedForThisShift.length / posCount);
+        const remainder = assignedForThisShift.length % posCount;
+        let currentIdx = 0;
+        for (let i = 0; i < posCount; i++) {
+          const countForThisPos = perPos + (i < remainder ? 1 : 0);
+          distribution[i] = assignedForThisShift.slice(currentIdx, currentIdx + countForThisPos);
+          currentIdx += countForThisPos;
         }
         
         for (let i = 0; i < posCount; i++) {
