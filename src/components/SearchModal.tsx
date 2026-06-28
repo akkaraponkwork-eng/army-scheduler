@@ -40,7 +40,7 @@ export default function SearchModal({
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content" style={{ maxWidth: '480px' }}>
+      <div className="modal-content" style={{ maxWidth: '480px', margin: 'auto' }}>
         <div className="modal-header">
           <div>
             <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

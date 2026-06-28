@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPersonnel, getExceptions, getPunishments, saveSchedule, saveException } from '@/lib/googleSheets';
+import { getPersonnel, getExceptions, getPunishments, saveSchedule, saveException, clearDailyAssistants } from '@/lib/googleSheets';
 import { generateSchedule } from '@/lib/scheduler';
 
 export async function POST(request: NextRequest) {
@@ -12,6 +12,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Always clear old assistant sergeants for this date range before generating
+    await clearDailyAssistants(startDate, endDate);
 
     if (assistantSergeants && Array.isArray(assistantSergeants) && assistantSergeants.length > 0) {
       // Save assistant sergeants as exceptions first

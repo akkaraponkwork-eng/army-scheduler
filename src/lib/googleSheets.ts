@@ -341,6 +341,37 @@ export async function saveException(entry: ExceptionEntry): Promise<void> {
   cache.exceptions = null;
 }
 
+export async function clearDailyAssistants(startDate: string, endDate: string): Promise<void> {
+  const sheets = await getSheetsClient();
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${EXCEPTIONS_SHEET}'!A2:D5000`,
+    });
+
+    const rows = response.data.values || [];
+    const rangesToClear: string[] = [];
+
+    rows.forEach((row, index) => {
+      if (row[1] === 'ผู้ช่วยสิบเวร' && row[2] >= startDate && row[2] <= endDate) {
+        rangesToClear.push(`'${EXCEPTIONS_SHEET}'!A${index + 2}:D${index + 2}`);
+      }
+    });
+
+    if (rangesToClear.length > 0) {
+      await sheets.spreadsheets.values.batchClear({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: {
+          ranges: rangesToClear,
+        },
+      });
+      cache.exceptions = null;
+    }
+  } catch (err) {
+    console.error('Failed to clear daily assistants', err);
+  }
+}
+
 export async function removeException(personnelId: number, startDate: string): Promise<void> {
   const sheets = await getSheetsClient();
   try {

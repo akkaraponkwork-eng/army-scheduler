@@ -109,9 +109,9 @@ function PrintContent() {
                         
                         return (
                           <td key={pos.key} style={{ fontSize: '10px', textAlign: 'center', verticalAlign: 'top', padding: '4px' }}>
-                            {p1 ? <div>{String(p1.id).padStart(3, '0')} {p1.name.split(' ')[0]}</div> : '-'}
-                            {p2 ? <div>{String(p2.id).padStart(3, '0')} {p2.name.split(' ')[0]}</div> : ''}
-                            {p3 ? <div style={{ color: 'var(--orange)', fontWeight: 'bold' }}>{String(p3.id).padStart(3, '0')} {p3.name.split(' ')[0]}</div> : ''}
+                            {p1 ? <div>{String(p1.id).padStart(3, '0')}</div> : '-'}
+                            {p2 ? <div>{String(p2.id).padStart(3, '0')}</div> : ''}
+                            {p3 ? <div style={{ color: 'var(--orange)', fontWeight: 'bold' }}>{String(p3.id).padStart(3, '0')}</div> : ''}
                           </td>
                         );
                       })}

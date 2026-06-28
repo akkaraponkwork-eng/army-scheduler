@@ -69,7 +69,7 @@ export default function ExceptionManager({
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content" style={{ maxWidth: '560px' }}>
+      <div className="modal-content" style={{ maxWidth: '560px', margin: 'auto' }}>
         <div className="modal-header">
           <div>
             <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ShieldAlert size={20} className="text-amber-500" /> จัดการกรณียกเว้น</div>
